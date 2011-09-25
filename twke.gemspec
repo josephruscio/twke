@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors = ["Joseph Ruscio"]
   s.date = %q{2011-09-24}
   s.default_executable = %q{twke}
-  s.description = %q{Pending first release}
+  s.description = %q{The ambuquad that has your back.}
   s.email = %q{joe@ruscio.org}
   s.executables = ["twke"]
   s.extra_rdoc_files = [
@@ -37,7 +37,7 @@ Gem::Specification.new do |s|
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.6.2}
-  s.summary = %q{Pending first release}
+  s.summary = %q{Bidi-Bidi-Bidi!}
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
