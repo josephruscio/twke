@@ -11,19 +11,59 @@ require 'twke'
 require 'optparse'
 
 # Define the options and their default values
-$options = {}
+$options = {
+  :api_key => ENV['TWKE_API_KEY'],
+  :subdomain =>  ENV['TWKE_SUBDOMAIN'],
+  :name => "twke",
+  :rooms => ENV['TWKE_ROOMS'],
+  :verbose => false
+}
 
 optparse = OptionParser.new do|opts|
-	opts.banner = "Usage: #{File.basename(__FILE__)} <options>\n"
+  opts.banner = "Usage: #{File.basename(__FILE__)} <options>\n"
 
-	# help
-	opts.on( '-h', '--help', 'Display this screen' ) do
-		puts opts
-		exit
-	end
+  opts.on( '-k', '--api-key k', "Campfire API Key") do |k|
+    $options[:api_key] = k
+  end
+
+  opts.on( '-s', '--subdomain s', "Campfire Subdomain") do |s|
+    $options[:subdomain] = s
+  end
+
+  opts.on( '-n', '--name n', "Name that twke responds to (defaults to 'twke')") do |n|
+    $options[:name] = n
+  end
+
+  #TODO: support more than one room
+  opts.on( '-r', '--rooms r', "Room IDs for twke to join") do |r|
+    $options[:rooms] = r
+  end
+
+  opts.on( '-V', '--verbose', "Operate in verbose fashion") do
+    $options[:verbose] = true
+  end
+
+  # help
+  opts.on( '-h', '--help', 'Display this screen' ) do
+    puts opts
+    exit
+  end
 end
 
 # Parse the options
 optparse.parse!
 
-puts "bidi-bidi-bidi!"
+# Add :verbose => true to get debug output, otherwise the logger will output INFO
+scamp = Scamp.new(:api_key => $options[:api_key],
+                  :subdomain => $options[:subdomain],
+                  :required_prefix => "#{$options[:name]}: ",
+                  :verbose => $options[:verbose])
+
+scamp.behaviour do
+  match 'bidi' do
+    say "bidi-bidi-bidi!"
+  end
+end
+
+#TODO: support more than one room
+scamp.connect!([$options[:rooms].to_i])
