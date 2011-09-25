@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
+#Gems
+require 'rubygems'
+require 'twke'
+
+##############################################################################
+## Option parsing
+##############################################################################
+require 'optparse'
+
+# Define the options and their default values
+$options = {}
+
+optparse = OptionParser.new do|opts|
+	opts.banner = "Usage: #{File.basename(__FILE__)} <options>\n"
+
+	# help
+	opts.on( '-h', '--help', 'Display this screen' ) do
+		puts opts
+		exit
+	end
+end
+
+# Parse the options
+optparse.parse!
+
+puts "bidi-bidi-bidi!"

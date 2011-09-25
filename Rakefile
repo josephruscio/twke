@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "twke"
   gem.homepage = "http://github.com/josephruscio/twke"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Pending first release}
+  gem.description = %Q{Pending first release}
   gem.email = "joe@ruscio.org"
   gem.authors = ["Joseph Ruscio"]
   # dependencies defined in Gemfile
