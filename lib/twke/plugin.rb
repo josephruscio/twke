@@ -18,6 +18,17 @@ class Plugin
       @plugins ||= []
     end
 
+    # Invoked when adding routes. Pass in params here. Could expand
+    # this to receive a number of events.
+    #
+    def routes(rp)
+      plgin = new()
+
+      if plgin.respond_to?(:add_routes)
+        plgin.add_routes(rp)
+      end
+    end
+
     # Registers the current plugin with the system.
     #
     # Returns nothing.
