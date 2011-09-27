@@ -56,14 +56,9 @@ optparse.parse!
 # Add :verbose => true to get debug output, otherwise the logger will output INFO
 scamp = Scamp.new(:api_key => $options[:api_key],
                   :subdomain => $options[:subdomain],
-                  :required_prefix => "#{$options[:name]}: ",
                   :verbose => $options[:verbose])
 
-scamp.behaviour do
-  match 'bidi' do
-    say "bidi-bidi-bidi!"
-  end
-end
+Twke::Routes.load(scamp)
 
 #TODO: support more than one room
 scamp.connect!([$options[:rooms].to_i])
