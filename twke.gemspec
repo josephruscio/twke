@@ -5,30 +5,33 @@
 
 Gem::Specification.new do |s|
   s.name = %q{twke}
-  s.version = "0.0.1"
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Joseph Ruscio"]
-  s.date = %q{2011-09-24}
+  s.authors = ["Joseph Ruscio", "Mike Heffner"]
+  s.date = %q{2011-09-27}
   s.default_executable = %q{twke}
   s.description = %q{The ambuquad that has your back.}
   s.email = %q{joe@ruscio.org}
   s.executables = ["twke"]
   s.extra_rdoc_files = [
     "LICENSE.txt",
-    "README.rdoc"
+    "README.md"
   ]
   s.files = [
     ".document",
     "Gemfile",
     "Gemfile.lock",
     "LICENSE.txt",
-    "README.rdoc",
+    "README.md",
     "Rakefile",
     "VERSION",
     "bin/twke",
     "lib/twke.rb",
     "lib/twke/plugin.rb",
+    "lib/twke/routes.rb",
+    "plugins/admin.rb",
+    "plugins/twiki.rb",
     "test/helper.rb",
     "test/test_twke.rb",
     "twke.gemspec"
