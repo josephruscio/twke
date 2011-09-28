@@ -20,7 +20,7 @@ Jeweler::Tasks.new do |gem|
   gem.summary = %Q{Bidi-Bidi-Bidi!}
   gem.description = %Q{The ambuquad that has your back.}
   gem.email = "joe@ruscio.org"
-  gem.authors = ["Joseph Ruscio"]
+  gem.authors = ["Joseph Ruscio", "Mike Heffner"]
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
