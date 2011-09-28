@@ -15,10 +15,20 @@ creating a new plugin is extremely straightforward:
 1. Start a feature branch
 1. Create a new file in `/plugins` called `plugin_name.rb`, using the
 following template:
+
+    ```ruby
     class Plugin::PluginName < Plugin
       def add_routes(rp)
+        rp.route 'foo' do
+          say 'bar'
+        end
+        
+        rp.route 'hello' do
+          say "Hello World!"
+        end
       end
     end
+    ```
 1. Commit and push until you are happy with your contribution
 1. Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 1. Submit a pull request from your fork to josephruscio/twke
