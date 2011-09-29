@@ -27,8 +27,7 @@ module Twke
 
         # TODO: Only load the configured plugins
         Plugin.plugins.each do |plgin|
-          # TODO: always prefix with 'twke', configurable later?
-          plgin.routes(RoutePrefix.new('twke'))
+          plgin.routes(RoutePrefix.new($options[:name]))
         end
       end
 
