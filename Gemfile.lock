@@ -2,6 +2,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     addressable (2.2.6)
+    can-has-lolcat (1.1.0)
     em-http-request (1.0.0)
       addressable (>= 2.2.3)
       em-socksify
@@ -30,6 +31,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.0.0)
+  can-has-lolcat (~> 1.1.0)
   jeweler (~> 1.6.4)
   rcov
   scamp (~> 0.1.1)
