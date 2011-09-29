@@ -1,11 +1,10 @@
-# Fun with twke
-#
+require 'can-has-lolcat'
+
 class Plugin::Lolcats < Plugin
   # Invoked to define routes.
   def add_routes(rp)
     rp.route 'meow' do
-      lolcat = Lolcat.can_haz
-      say lolcat
+      say Lolcat.can_haz
     end
   end
 end
