@@ -21,6 +21,11 @@ module Twke
         end
       end
 
+      # Run a raw command and the connection scope level
+      def cmd(&blk)
+        Routes.cmd(&blk)
+      end
+
       def method_missing(name, &blk)
         @levels.push(name)
         yield
@@ -47,9 +52,14 @@ module Twke
       end
 
       def add(trigger, *opts, &blk)
-        @@conn.behaviour do
+        cmd do
           match(trigger, *opts, &blk)
         end
+      end
+
+      # Run a raw command
+      def cmd(&blk)
+        @@conn.behaviour(&blk)
       end
     end
   end
