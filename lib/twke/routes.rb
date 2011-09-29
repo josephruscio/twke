@@ -6,16 +6,31 @@ module Twke
         @levels.push(str) if str
       end
 
-      def route(str, *opts, &blk)
-        @levels.push(str)
-        Routes.add(@levels.join(" "), *opts, &blk)
-        @levels.pop
+      def route(trigger, *opts, &blk)
+        if trigger.class == Regexp
+          pfx = prefix.length
+          if prefix.length > 0
+            trigger = Regexp.new("#{prefix} #{trigger.to_s}")
+          end
+
+          Routes.add(trigger, *opts, &blk)
+        else
+          @levels.push(trigger)
+          Routes.add(prefix, *opts, &blk)
+          @levels.pop
+        end
       end
 
       def method_missing(name, &blk)
         @levels.push(name)
         yield
         @levels.pop
+      end
+
+    private
+
+      def prefix
+        @levels.join(" ")
       end
     end
 
@@ -31,9 +46,9 @@ module Twke
         end
       end
 
-      def add(str, *opts, &blk)
+      def add(trigger, *opts, &blk)
         @@conn.behaviour do
-          match(str, *opts, &blk)
+          match(trigger, *opts, &blk)
         end
       end
     end
