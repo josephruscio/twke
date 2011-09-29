@@ -21,7 +21,7 @@ class Plugin::Admin < Plugin
         if !id
           say "No room by the name/ID: #{roomname}"
         else
-          rp.cmd { join(id) }
+          rp.cmd { join_and_stream(id) }
         end
       end
     end
