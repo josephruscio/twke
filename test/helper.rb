@@ -15,4 +15,5 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'twke'
 
 class Test::Unit::TestCase
+  include Twke
 end

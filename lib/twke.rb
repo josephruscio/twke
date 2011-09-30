@@ -1,8 +1,11 @@
 module Twke
   require 'scamp'
 
-  require 'twke/routes.rb'
-  require 'twke/plugin.rb'
+  $:.unshift File.join(File.dirname(__FILE__), 'twke')
+
+  require 'conf'
+  require 'routes'
+  require 'plugin'
 
   def self.version
     File.read(File.join(File.dirname(__FILE__), '../VERSION')).chomp
