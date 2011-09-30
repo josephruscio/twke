@@ -3,7 +3,7 @@
 #
 class Plugin::Config < Plugin
   # Invoked to define routes.
-  def add_routes(rp)
+  def add_routes(rp, opts)
     # XXX: scope problems
     me = self
 

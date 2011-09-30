@@ -58,7 +58,4 @@ scamp = Scamp.new(:api_key => $options[:api_key],
                   :subdomain => $options[:subdomain],
                   :verbose => $options[:verbose])
 
-Twke.init(scamp)
-
-#TODO: support more than one room
-scamp.connect!([$options[:rooms].to_i])
+Twke.start(scamp)

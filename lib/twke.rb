@@ -15,11 +15,22 @@ module Twke
     puts "Registering plugin #{plgn.plugin_name}"
   end
 
-  def self.init(scamp)
+  def self.start(scamp)
     Twke::Conf.load
     Twke::Routes.load(scamp)
 
-    # Do connection here?
+    # XXX: Scamp needs an on_connect callback, fake one with a timer
+    # here.
+    # EM::Timer.new(5) do
+    #   Twke::Routes.on_connect
+    # end
+
+    # Any rooms configured to join via the CLI will be done in the
+    # on_connect CB.
+    #
+    scamp.connect!([]) do
+      Twke::Routes.on_connect
+    end
   end
 
   def self.shutdown

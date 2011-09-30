@@ -18,7 +18,7 @@ following template:
 
     ```ruby
     class Plugin::PluginName < Plugin
-      def add_routes(rp)
+      def add_routes(rp, opts)
         rp.route 'foo' do
           say 'bar'
         end
