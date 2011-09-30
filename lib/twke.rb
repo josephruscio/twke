@@ -15,6 +15,13 @@ module Twke
     puts "Registering plugin #{plgn.plugin_name}"
   end
 
+  def self.init(scamp)
+    Twke::Conf.load
+    Twke::Routes.load(scamp)
+
+    # Do connection here?
+  end
+
   def self.shutdown
     exit 0
   end

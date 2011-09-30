@@ -46,6 +46,23 @@ class Plugin::Config < Plugin
           say "Can't set #{varstr} to #{valstr}"
       end
     end
+
+    rp.route /get (?<var>[^ ]+)[ ]*$/ do
+      if Twke::Conf::exists?(var)
+        say "#{var} = #{Twke::Conf::get(var).inspect}"
+      else
+        say "#{var} is not set!"
+      end
+    end
+
+    rp.route /list (?<var>[^ ]+)[ ]*$/ do
+      l = Twke::Conf::list(var)
+      if l.length == 0
+        say "#{var} is empty"
+      else
+        say "#{var} = #{l.inspect}"
+      end
+    end
   end
 
   # XXX: really should be private but scoping problems require this
