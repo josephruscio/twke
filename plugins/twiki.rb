@@ -2,7 +2,7 @@
 #
 class Plugin::Twiki < Plugin
   # Invoked to define routes.
-  def add_routes(rp)
+  def add_routes(rp, opts)
     rp.route 'bidi' do
       say 'bidi-bidi-bidi!'
     end

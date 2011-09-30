@@ -1,7 +1,12 @@
 source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
-gem "scamp", "~> 0.1.1"
+#gem "scamp", "~> 0.1.1"
+
+#gem "scamp", :path => ENV['HOME'] + "/git/clones/Scamp"
+
+gem "scamp", :git => 'https://github.com/mheffner/Scamp.git', :branch => 'feature/post_connect_cb'
+
 gem "can-has-lolcat", "~> 1.1.0"
 
 # Add dependencies to develop your gem here.

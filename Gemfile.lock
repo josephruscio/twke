@@ -1,3 +1,13 @@
+GIT
+  remote: https://github.com/mheffner/Scamp.git
+  revision: 8e17bc65a0dd8fcade961ef9adc1e688b35cb594
+  branch: feature/post_connect_cb
+  specs:
+    scamp (0.1.2)
+      em-http-request (~> 1.0.0.beta.4)
+      eventmachine (~> 1.0.0.beta.4)
+      yajl-ruby (~> 0.8.3)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -19,10 +29,6 @@ GEM
       rake
     rake (0.9.2)
     rcov (0.9.10)
-    scamp (0.1.2)
-      em-http-request (~> 1.0.0.beta.4)
-      eventmachine (~> 1.0.0.beta.4)
-      yajl-ruby (~> 0.8.3)
     shoulda (2.11.3)
     yajl-ruby (0.8.3)
 
@@ -34,5 +40,5 @@ DEPENDENCIES
   can-has-lolcat (~> 1.1.0)
   jeweler (~> 1.6.4)
   rcov
-  scamp (~> 0.1.1)
+  scamp!
   shoulda

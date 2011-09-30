@@ -45,9 +45,22 @@ module Twke
       def load(scamp)
         @@conn = scamp
 
-        # TODO: Only load the configured plugins
+        # TODO: Only load the configured plugins.
+        # XXX: doesn't feel right to do this in routes...
         Plugin.plugins.each do |plgin|
-          plgin.routes(RoutePrefix.new($options[:name]))
+          plgin.load_plugin
+        end
+
+        # Now ask all loaded plugins to add routes
+        Plugin.loaded_plugins.each do |plgin|
+          plgin.event(:add_routes, RoutePrefix.new($options[:name]), $options)
+        end
+      end
+
+      # Invoked (in theory) after we're connected to campfire
+      def on_connect
+        Plugin.loaded_plugins.each do |plgin|
+          plgin.event(:on_connect, RoutePrefix.new($options[:name]), $options)
         end
       end
 
