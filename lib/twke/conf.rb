@@ -27,8 +27,6 @@ require 'yaml'
 module Twke
   module Conf
     class << self
-      attr_accessor :conf
-
       def conf
         @conf ||= {}
       end
