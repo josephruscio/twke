@@ -18,15 +18,15 @@ class Plugin
       @plugins ||= []
     end
 
-    # Invoked when adding routes. Pass in params here. Could expand
-    # this to receive a number of events.
-    #
-    def routes(rp)
-      plgin = new()
+    def loaded_plugins
+      @loaded_plugins ||= []
+    end
 
-      if plgin.respond_to?(:add_routes)
-        plgin.add_routes(rp)
-      end
+    # Invoked to load this plugin. Will initialize and add to the
+    # loaded plugins list.
+    # TODO: Add initialization parameters here??
+    def load_plugin
+      Plugin.loaded_plugins << new()
     end
 
     # Registers the current plugin with the system.
@@ -38,4 +38,15 @@ class Plugin
       super
     end
   end
+
+  # Invoked to send an event to this plugin. Checks if plugins
+  # responds to the event. All events take a routing prefix and
+  # the CLI options.
+  #
+  def event(name, rp, opts)
+    if self.respond_to?(name.to_sym)
+      self.send(name.to_sym, rp, opts)
+    end
+  end
+
 end
