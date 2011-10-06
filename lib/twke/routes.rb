@@ -8,16 +8,16 @@ module Twke
 
       def route(trigger, *opts, &blk)
         if trigger.class == Regexp
-          pfx = prefix.length
-          if prefix.length > 0
+          if prefix.length > 0 && !no_prefix?(*opts)
             trigger = Regexp.new("#{prefix} #{trigger.to_s}")
           end
 
           Routes.add(trigger, *opts, &blk)
         else
-          @levels.push(trigger)
-          Routes.add(prefix, *opts, &blk)
-          @levels.pop
+          # Send trigger as a prefix
+          self.send(trigger, *opts) do
+            Routes.add(prefix, *opts, &blk)
+          end
         end
       end
 
@@ -26,13 +26,26 @@ module Twke
         Routes.cmd(&blk)
       end
 
-      def method_missing(name, &blk)
-        @levels.push(name)
-        yield
-        @levels.pop
+      def method_missing(name, *opts, &blk)
+        if no_prefix?(*opts)
+          # If they requested no prefix, save the current prefix
+          # and execute the block starting with the current prefix
+          save_levels = @levels.dup
+          @levels = [name]
+          yield
+          @levels = save_levels
+        else
+          @levels.push(name)
+          yield
+          @levels.pop
+        end
       end
 
     private
+
+      def no_prefix?(options = {})
+        options[:noprefix]
+      end
 
       def prefix
         @levels.join(" ")

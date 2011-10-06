@@ -33,6 +33,57 @@ following template:
 1. Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 1. Submit a pull request from your fork to josephruscio/twke
 
+## More examples
+
+```ruby
+def add_routes(rp, opts)
+  #
+  # Create command scopes.
+  #
+  #  Example, listen for the following:
+  #   <bot> admin version
+  #   <bot> admin quit
+  #
+
+  rp.admin do
+    rp.route 'version' do |act|
+      act.say "Version is 0.1.2"
+    end
+
+    rp.route 'quit' do |act|
+      act.say "Leaving"
+      exit 0
+    end
+  end
+
+  #
+  # Don't require the <bot> string prefix.
+  #
+  #  Example, listen for the following:
+  #
+  #    admin version
+  #
+
+  rp.admin(:noprefix => true) do
+    rp.route 'version' do |act|
+      act.say "Version cmd without <bot> prefix!"
+    end
+  end
+
+  #
+  # Top-level route without <bot> prefix
+  #
+  #  Example, listen for the following:
+  #
+  #    bark
+  #
+
+  rp.route 'bark', :noprefix => true do |act|
+    act.play 'barking'
+  end
+end
+```
+
 ## Colophon
 
 twke is named after the [ambuquad designated
