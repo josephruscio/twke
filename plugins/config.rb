@@ -4,75 +4,67 @@
 class Plugin::Config < Plugin
   # Invoked to define routes.
   def add_routes(rp, opts)
-    # XXX: scope problems
-    me = self
-
-    rp.route /set (?<var>[^ ]+)[ ]+(?<value>.*[^ ])[ ]*$/ do
-      varstr = var
-      valstr = value
+    rp.route /set (?<var>[^ ]+)[ ]+(?<value>.*[^ ])[ ]*$/ do |act|
+      varstr = act.var
+      valstr = act.value
 
       # "value" or 'value' implies string
       if valstr =~ /^".*"$/ || valstr =~ /^'.*'$/
         valstr = valstr[1, valstr.length - 2]
-        me.set_var(varstr, valstr) or
-          say "Can't set #{varstr} to #{valstr}"
+        set_var(act, varstr, valstr)
         next
       end
 
       # Try as an integer
       as_int = Integer(valstr) rescue nil
       unless as_int.nil?
-        me.set_var(varstr, as_int) or
-          say "Can't set #{varstr} to #{valstr}"
+        set_var(act, varstr, as_int)
         next
       end
 
       # Try as a float
       as_float = Float(valstr) rescue nil
       unless as_float.nil?
-        me.set_var(varstr, as_float) or
-          say "Can't set #{varstr} to #{valstr}"
+        set_var(act, varstr, as_float)
         next
       end
 
       # Try to eval it
       begin
         as_eval = eval(valstr)
-        me.set_var(varstr, as_eval) or
-          say "Can't set #{varstr} to #{valstr}"
+        set_var(act, varstr, as_eval)
       rescue
         # Fall back to just a string
-        me.set_var(varstr, valstr) or
-          say "Can't set #{varstr} to #{valstr}"
+        set_var(act, varstr, valstr)
       end
     end
 
-    rp.route /get (?<var>[^ ]+)[ ]*$/ do
-      if Twke::Conf::exists?(var)
-        say "#{var} = #{Twke::Conf::get(var).inspect}"
+    rp.route /get (?<var>[^ ]+)[ ]*$/ do |act|
+      if Twke::Conf::exists?(act.var)
+        act.say "#{act.var} = #{Twke::Conf::get(act.var).inspect}"
       else
-        say "#{var} is not set!"
+        act.say "#{act.var} is not set!"
       end
     end
 
-    rp.route /list (?<var>[^ ]+)[ ]*$/ do
-      l = Twke::Conf::list(var)
+    rp.route /list (?<var>[^ ]+)[ ]*$/ do |act|
+      l = Twke::Conf::list(act.var)
       if l.length == 0
-        say "#{var} is empty"
+        act.say "#{act.var} is empty"
       else
-        say "#{var} = #{l.inspect}"
+        act.say "#{act.var} = #{l.inspect}"
       end
     end
   end
 
+private
+
   # XXX: really should be private but scoping problems require this
-  def set_var(var, value)
+  def set_var(act, var, value)
     begin
       Twke::Conf::set(var, value)
-      return true
     rescue => err
-      puts "Failure setting variable #{var}=#{value}: #{err.inspect}"
-      return false
+      act.say "Failure setting variable #{var}=#{value}: #{err.inspect}"
     end
   end
 end

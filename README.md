@@ -19,12 +19,12 @@ following template:
     ```ruby
     class Plugin::PluginName < Plugin
       def add_routes(rp, opts)
-        rp.route 'foo' do
-          say 'bar'
+        rp.route 'foo' do |act|
+          act.say 'bar'
         end
         
-        rp.route 'hello' do
-          say "Hello World!"
+        rp.route /hello (?<person>.+)$/ do |act|
+          act.say "Hello #{act.person}!"
         end
       end
     end

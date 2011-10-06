@@ -5,7 +5,7 @@ source "http://rubygems.org"
 
 #gem "scamp", :path => ENV['HOME'] + "/git/clones/Scamp"
 
-gem "scamp", :git => 'https://github.com/mheffner/Scamp.git', :branch => 'feature/post_connect_cb'
+gem "scamp", :git => 'https://github.com/mheffner/Scamp.git', :branch => 'feature/pass_action_context'
 
 gem "can-has-lolcat", "~> 1.1.0"
 

@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/mheffner/Scamp.git
-  revision: 8e17bc65a0dd8fcade961ef9adc1e688b35cb594
-  branch: feature/post_connect_cb
+  revision: 362b8385db9b16ce09607c824e5b0d9f9ade0bcc
+  branch: feature/pass_action_context
   specs:
     scamp (0.1.2)
       em-http-request (~> 1.0.0.beta.4)
@@ -22,7 +22,7 @@ GEM
       eventmachine
     eventmachine (1.0.0.beta.4)
     git (1.2.5)
-    http_parser.rb (0.5.2)
+    http_parser.rb (0.5.3)
     jeweler (1.6.4)
       bundler (~> 1.0)
       git (>= 1.2.5)

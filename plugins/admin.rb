@@ -6,28 +6,25 @@ class Plugin::Admin < Plugin
 
   # Add routes
   def add_routes(rp, opts)
-    # XXX: scope issues
-    me = self
-
     rp.admin do
-      rp.route 'respawn' do
-        say "Initiating respawn"
+      rp.route 'respawn' do |act|
+        act.say "Initiating respawn"
         EM::Timer.new(2) do
           Twke::shutdown
         end
       end
 
-      rp.route /join (?<room>.+)$/ do
+      rp.route /join (?<room>.+)$/ do |act|
         # Convert to an integer if possible
-        id = me.get_room_id(rp, room)
+        id = get_room_id(rp, act.room)
 
         if !id
-          say "No room by the name/ID: #{room}"
+          act.say "No room by the name/ID: #{act.room}"
         else
-          me.join_room(rp, id)
+          join_room(rp, id)
 
           # Save this room so we rejoin on startup
-          rooms = (Twke::Conf.get('admin.join_rooms') || []) + [room]
+          rooms = (Twke::Conf.get('admin.join_rooms') || []) + [act.room]
           Twke::Conf.set('admin.join_rooms', rooms.sort.uniq)
         end
       end
@@ -38,6 +35,8 @@ class Plugin::Admin < Plugin
   def on_connect(rp, opts)
     join_rooms(rp, opts)
   end
+
+private
 
   #
   # Helper routines
@@ -53,8 +52,6 @@ class Plugin::Admin < Plugin
   def join_room(rp, id)
     rp.cmd { join_and_stream(id) }
   end
-
-private
 
   # Automatically join saved rooms on startup
   def join_rooms(rp, opts)

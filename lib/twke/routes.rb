@@ -66,7 +66,16 @@ module Twke
 
       def add(trigger, *opts, &blk)
         cmd do
-          match(trigger, *opts, &blk)
+          match(trigger, *opts) do
+            # This yields the action (ie, room) context to the
+            # callback. All actions that could be done in the Scamp
+            # 'match' context can be performed on the yielded
+            # object. This lets you pass the context to an EM context
+            # later.
+            #
+
+            yield(self)
+          end
         end
       end
 
