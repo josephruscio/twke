@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{twke}
-  s.version = "0.1.0"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Joseph Ruscio", "Mike Heffner"]
-  s.date = %q{2011-09-27}
+  s.date = %q{2011-10-07}
   s.default_executable = %q{twke}
   s.description = %q{The ambuquad that has your back.}
   s.email = %q{joe@ruscio.org}
@@ -27,13 +27,18 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "bin/twke",
+    "dot.rvmrc",
     "lib/twke.rb",
+    "lib/twke/conf.rb",
     "lib/twke/plugin.rb",
     "lib/twke/routes.rb",
     "plugins/admin.rb",
+    "plugins/config.rb",
+    "plugins/jenkins.rb",
+    "plugins/lolcats.rb",
     "plugins/twiki.rb",
     "test/helper.rb",
-    "test/test_twke.rb",
+    "test/test_conf.rb",
     "twke.gemspec"
   ]
   s.homepage = %q{http://github.com/josephruscio/twke}
@@ -46,20 +51,23 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<scamp>, ["~> 0.1.1"])
+      s.add_runtime_dependency(%q<scamp>, [">= 0"])
+      s.add_runtime_dependency(%q<can-has-lolcat>, ["~> 1.1.0"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
     else
-      s.add_dependency(%q<scamp>, ["~> 0.1.1"])
+      s.add_dependency(%q<scamp>, [">= 0"])
+      s.add_dependency(%q<can-has-lolcat>, ["~> 1.1.0"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_dependency(%q<rcov>, [">= 0"])
     end
   else
-    s.add_dependency(%q<scamp>, ["~> 0.1.1"])
+    s.add_dependency(%q<scamp>, [">= 0"])
+    s.add_dependency(%q<can-has-lolcat>, ["~> 1.1.0"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
