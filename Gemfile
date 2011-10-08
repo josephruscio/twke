@@ -1,5 +1,7 @@
 source "http://rubygems.org"
 
+gem 'rack', '1.3.3'
+
 gem 'yajl-ruby', :require => [ 'yajl', 'yajl/json_gem' ]
 
 gem 'faraday', '~> 0.7.5'
