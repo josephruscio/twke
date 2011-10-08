@@ -1,5 +1,6 @@
 module Twke
   require 'scamp'
+  require 'faraday'
 
   $:.unshift File.join(File.dirname(__FILE__), 'twke')
 
