@@ -53,46 +53,39 @@ class Plugin
   # HTTP Helpers
   #
 
-  def http_get(url = nil, params = nil, headers = nil)
-    http.get do |req|
-      req.url(url)                if url
-      req.params.update(params)   if params
-      req.headers.update(headers) if headers
-      yield req if block_given?
-    end
-  end
-
-  def http_post(url = nil, body = nil, headers = nil)
-    http.post do |req|
-      req.url(url)                if url
-      req.headers.update(headers) if headers
-      req.body = body             if body
-      yield req if block_given?
-    end
-  end
-
-  def http_method(method, url = nil, body = nil, headers = nil)
-    http.send(method) do |req|
-      req.url(url)                if url
-      req.headers.update(headers) if headers
-      req.body = body             if body
-      yield req if block_given?
-    end
-  end
-
-  def faraday_options
-    options = {
-      :timeout => 6,
+  def http(verb, url, opts = {}, &blk)
+    header = {
+      'accept' => 'application/json',
     }
+
+    header['authorization'] = build_auth(opts[:user]) if opts[:user]
+    opts.delete(:user)
+
+    params = opts.merge(:head => header,
+                        :connect_timeout => 5)
+
+    cb = EventMachine::HttpRequest.new(url).send(verb, params)
+    cb.errback do
+      yield(nil, nil)
+    end
+    cb.callback do
+      yield(cb.response_header, cb.response)
+    end
   end
 
-  def http(options = {})
-    @http ||= begin
-        Faraday.new(faraday_options.merge(options)) do |b|
-          # TODO: Switch to EventMachine
-          b.adapter :net_http
-        end
-    end
+private
+
+  #
+  # XXX: em-http-request supports basic authentication, but it can
+  # include a newline in the encoded authorization string. Since
+  # heroku can't handle a wrapped authorization string, we must
+  # generate it ourselves and guarantee there is no newline.
+  #
+  # We send it to em-http-request as if it were a custom auth string.
+  #
+  def build_auth(creds)
+    creds = [creds[:name].chomp, creds[:password].chomp]
+    "Basic " + Base64.encode64(creds.join(":")).gsub("\n", "")
   end
 
   def json_decode(value)

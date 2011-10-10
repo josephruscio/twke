@@ -1,6 +1,7 @@
 module Twke
-  require 'scamp'
-  require 'faraday'
+  require 'bundler'
+
+  Bundler.require
 
   $:.unshift File.join(File.dirname(__FILE__), 'twke')
 
