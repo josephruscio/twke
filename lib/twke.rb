@@ -8,6 +8,7 @@ module Twke
   require 'conf'
   require 'routes'
   require 'plugin'
+  require 'spawner'
 
   def self.version
     File.read(File.join(File.dirname(__FILE__), '../VERSION')).chomp
