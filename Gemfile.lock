@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/mheffner/Scamp.git
-  revision: 362b8385db9b16ce09607c824e5b0d9f9ade0bcc
+  revision: 13c0887710ecd01b4272237e4a9eb1b548ac411a
   branch: feature/pass_action_context
   specs:
-    scamp (0.1.2)
+    scamp (0.2.0)
       em-http-request (~> 1.0.0.beta.4)
       eventmachine (~> 1.0.0.beta.4)
       yajl-ruby (~> 0.8.3)
