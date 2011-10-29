@@ -10,7 +10,9 @@ gem 'faraday', '~> 0.7.5'
 #gem "scamp", :path => ENV['HOME'] + "/git/clones/Scamp"
 gem "scamp", :git => 'https://github.com/mheffner/Scamp.git', :branch => 'feature/pass_action_context'
 
-gem "can-has-lolcat", "~> 1.1.0"
+#gem "can-has-lolcat", "~> 1.1.0"
+#gem "can-has-lolcat", :path => "../can-has-lolcat"
+gem "can-has-lolcat", :git => 'https://github.com/josephruscio/can-has-lolcat.git', :branch => 'feature/add-puppeh-support'
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.

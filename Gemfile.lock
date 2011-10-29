@@ -1,4 +1,11 @@
 GIT
+  remote: https://github.com/josephruscio/can-has-lolcat.git
+  revision: ac961a6fc403d69719bb2c86e61c491288e93be7
+  branch: feature/add-puppeh-support
+  specs:
+    can-has-lolcat (1.1.0)
+
+GIT
   remote: https://github.com/mheffner/Scamp.git
   revision: 13c0887710ecd01b4272237e4a9eb1b548ac411a
   branch: feature/pass_action_context
@@ -12,7 +19,6 @@ GEM
   remote: http://rubygems.org/
   specs:
     addressable (2.2.6)
-    can-has-lolcat (1.1.0)
     em-http-request (1.0.0)
       addressable (>= 2.2.3)
       em-socksify
@@ -43,7 +49,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.0.0)
-  can-has-lolcat (~> 1.1.0)
+  can-has-lolcat!
   faraday (~> 0.7.5)
   jeweler (~> 1.6.4)
   rack (= 1.3.3)
