@@ -21,8 +21,4 @@ class Plugin::Jobs < Plugin
       end
     end
   end
-
-  def on_connect(rp, opts)
-    d = Twke::JobManager.spawn("/bin/sleep 300")
-  end
 end
