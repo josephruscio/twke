@@ -36,7 +36,7 @@ class Plugin::Run < Plugin
 private
 
   def run_command(cmdname, cmd, act)
-    d = Twke::Spawner.popen(cmd)
+    d = Twke::JobManager.spawn(cmd)
 
     d.callback do |output|
       out = output.chomp

@@ -1,38 +1,5 @@
 module Twke
-  module Spawner
-    class SpawnedJob < EventMachine::Connection
-      def initialize(params)
-        @output = ""
-        @dfr = params[:deferrable]
-        super
-      end
-
-      def notify_readable
-        begin
-          result = @io.read_nonblock(1024)
-          @output += result
-        rescue IO::WaitReadable
-        rescue EOFError
-          detach
-        end
-      end
-
-      # Invoked when the process completes and is passed the status
-      #
-      def finished(status)
-        return unless @dfr
-        if status.success?
-          @dfr.succeed(@output)
-        else
-          @dfr.fail(@output)
-        end
-      end
-
-      def unbind
-        @io.close
-      end
-    end
-
+  module JobManager
     # Watch the read end of the SIGCLD notication pipe
     class ProcessPipeWatch < EM::Connection
       def initialize(procwatch)
@@ -67,6 +34,14 @@ module Twke
       # Watch the PID and notify the spawned job
       def watch_pid(pid, sj)
         @procs[pid] = sj
+      end
+
+      def jobs
+        @procs.values
+      end
+
+      def job(id)
+        @procs[id]
       end
 
       def alert_exit
@@ -112,10 +87,24 @@ module Twke
         @process_watcher = ProcessWatch.new
         @process_watcher.start
 
-        trap("CLD") do
+        trap("CHLD") do
           # Alert the process watcher that a process exited.
           @process_watcher.alert_exit
         end
+      end
+
+      def list
+        # Return a list of the jobs
+        return @process_watcher ? @process_watcher.jobs : []
+      end
+
+      def killjob(jid)
+        return nil unless @process_watcher
+
+        job = @process_watcher.job(jid)
+        return nil unless job
+
+        job.kill!
       end
 
       #
@@ -124,12 +113,25 @@ module Twke
       # be invoked if the command succeeds or else the errback will be
       # invoked. Both callbacks are passed the program output.
       #
-      def popen(cmdstr)
+      def spawn(cmdstr)
         self.init
 
         rd, wr = IO::pipe
+        start_time = Time.now
         pid = fork do
           rd.close
+
+          # Job control
+          #
+          Process.setpgid(Process.pid, Process.pid)
+
+          # Reset signals
+          trap("INT", "DEFAULT")
+          trap("QUIT", "DEFAULT")
+          trap("TSTP", "DEFAULT")
+          trap("TTIN", "DEFAULT")
+          trap("TTOU", "DEFAULT")
+          trap("CHLD", "DEFAULT")
 
           # Tie stdout and stderr together
           $stdout.reopen wr
@@ -138,14 +140,21 @@ module Twke
           exec(cmdstr)
 
           # Shouldn't get here unless the exec fails
-          exit 1
+          exit 127
         end
 
         wr.close
 
         dfr = EM::DefaultDeferrable.new
 
-        d = EM::watch(rd, SpawnedJob, {:deferrable => dfr})
+        params = {
+          :deferrable => dfr,
+          :pid => pid,
+          :command => cmdstr,
+          :start_time => start_time,
+        }
+
+        d = EM::watch(rd, Job, params)
         d.notify_readable = true
 
         # Watch the process to notify when it completes
