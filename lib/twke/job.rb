@@ -11,6 +11,8 @@ module Twke
       @opts[:pid]
     end
 
+    alias_method :jid, :pid
+
     def start_time
       @opts[:start_time]
     end
@@ -19,8 +21,17 @@ module Twke
       @opts[:command]
     end
 
+    def callback(&blk)
+      @dfr.callback(&blk)
+    end
+
+    def errback(&blk)
+      @dfr.errback(&blk)
+    end
+
     def kill!
-      Process.kill("TERM", self.pid)
+      # Kill the process group
+      Process.kill("-TERM", self.pid)
     end
 
     def notify_readable

@@ -113,7 +113,7 @@ module Twke
       # be invoked if the command succeeds or else the errback will be
       # invoked. Both callbacks are passed the program output.
       #
-      def spawn(cmdstr)
+      def spawn(cmdstr, opts = {})
         self.init
 
         rd, wr = IO::pipe
@@ -137,7 +137,16 @@ module Twke
           $stdout.reopen wr
           $stderr.reopen wr
 
-          exec(cmdstr)
+          # Set environs if specified
+          opts[:environ].each_pair do |k, v|
+            ENV[k] = v
+          end if opts[:environ]
+
+          dir = opts[:dir] || ENV['PWD']
+
+          Dir.chdir(dir) do
+            exec(cmdstr)
+          end
 
           # Shouldn't get here unless the exec fails
           exit 127
@@ -160,7 +169,7 @@ module Twke
         # Watch the process to notify when it completes
         @process_watcher.watch_pid(pid, d)
 
-        return dfr
+        return d
       end
     end
   end
