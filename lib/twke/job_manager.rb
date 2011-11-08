@@ -25,6 +25,9 @@ module Twke
 
         rd, wr = IO::pipe
 
+        rd.close_on_exec = true
+        wr.close_on_exec = true
+
         @watched_pids_fd = {:rd => rd, :wr => wr}
       end
 
@@ -164,6 +167,7 @@ module Twke
         end
 
         wr.close
+        rd.close_on_exec = true
 
         params = {
           :chdir => opts[:dir] || jobtmpdir,

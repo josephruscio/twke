@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module Twke
   class Job < EventMachine::Connection
     def initialize(params)
@@ -9,6 +11,7 @@ module Twke
       @out_filename = File.join(@opts[:tmpdir], "output.txt")
       @out_file = File.open(@out_filename, "w+")
       @out_file.sync = true
+      @out_file.close_on_exec = true
       super
     end
 
@@ -40,7 +43,7 @@ module Twke
 
     def kill!
       # Kill the process group
-      Process.kill("-TERM", self.pid)
+      Process.kill("-TERM", self.pid) rescue 0
     end
 
     def notify_readable
