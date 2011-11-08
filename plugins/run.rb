@@ -38,16 +38,16 @@ private
   def run_command(cmdname, cmd, act)
     d = Twke::JobManager.spawn(cmd)
 
-    d.callback do |output|
-      out = output.chomp
+    d.callback do |job|
+      out = job.output.chomp
       act.say "Successfully ran #{cmdname}"
-      act.paste output if out.length > 0
+      act.paste job.output if out.length > 0
     end
 
-    d.errback do |output|
-      out = output.chomp
+    d.errback do |job|
+      out = job.output.chomp
       act.say "Failed to run #{cmdname}"
-      act.paste output if out.length > 0
+      act.paste job.output if out.length > 0
     end
   end
 end

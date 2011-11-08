@@ -100,8 +100,9 @@ private
     rdir = "#{tmpdir}/repo_#{rand 999999}"
 
     d = Twke::JobManager.spawn("git clone -q #{repo} #{rdir}")
-    d.errback do
-      puts "Failed to clone plugin repo #{repo} to #{rdir}"
+    d.errback do |job|
+      puts "Failed to clone plugin repo #{repo} to #{rdir}:"
+      puts job.output
     end
 
     d.callback do

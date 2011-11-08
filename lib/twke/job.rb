@@ -29,6 +29,10 @@ module Twke
       @dfr.errback(&blk)
     end
 
+    def output
+      @output
+    end
+
     def kill!
       # Kill the process group
       Process.kill("-TERM", self.pid)
@@ -49,9 +53,9 @@ module Twke
     def finished(status)
       return unless @dfr
       if status.success?
-        @dfr.succeed(@output)
+        @dfr.succeed(self)
       else
-        @dfr.fail(@output)
+        @dfr.fail(self)
       end
     end
 
