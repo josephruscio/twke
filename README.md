@@ -84,6 +84,97 @@ def add_routes(rp, opts)
 end
 ```
 
+## External Plugins
+
+By default, all plugins listed under the `plugins/` directory will be
+loaded at startup time. You can also specify additional external
+plugins to load at startup time using the `admin.load_plugins`
+configuration setting. External plugins can be loaded from a directory
+path on the file system or even from an external git repo.
+
+There are a couple limitations for external plugins. These may be
+addressed in the future:
+
+ * Plugins can not have any external dependencies are not listed in the
+   twke Gemfile.
+ * There is no support for post-clone operations (like bundle install)
+   when using an external GIT repo.
+
+### Loading external plugins from a directory
+
+For example:
+
+```
+set admin.load_plugins.darius.path "/home/albert/darius/plugins"
+```
+
+Will load all plugin files named `/home/albert/darius/plugins/*.rb` on
+startup.
+
+### Loading external plugins from a git repo
+
+For example:
+
+```
+set admin.load_plugins.darius.repo "https://github.com/albert/darius.git"
+set admin.load_plugins.darius.dir "plugins"
+```
+
+Will clone the git repo to a temporary directory and then load all
+plugin files named `*.rb` in the directory `plugins` of the git
+repo.
+
+
+## Job Control
+
+One of the main methods by which a plugin can perform a task is to
+spawn some external application. To assist this common pattern, Twke
+provides a fairly full-featured Job Control system.
+
+### Job Control Plugin Use
+
+The following example demonstrates how to use the job control system
+from your plugin:
+
+```ruby
+# Run /usr/bin/myapp
+#
+job = Twke::JobManager.spawn("/usr/bin/myapp --help", 
+                             { :dir => "/tmp/workdir",
+                               :environ => {
+                                  "MYVAR" => "MY_VALUE"
+                               }})
+
+# Set a callback when the job succeeds
+job.callback do
+  puts "Job succeeded!"
+end
+
+# Set a callback for job failure (non-zero exit code or signaled)
+job.errback do
+  puts "Job failed! See output:"
+
+  # Output can be retrieved with the job method 'output'
+  puts job.output
+end
+
+# Send a SIGTERM to the job:
+job.kill!
+
+# Get the last 20 lines of output from the job
+puts job.output_tail
+```
+
+### Job Control Plugin
+
+The jobs plugin also provides a number of helpful commands:
+
+ * `jobs list`: List all active and finished jobs. Jobs persist for 30
+   minutes after completion to allow for checking outputs.
+ * `jobs kill <JID>`: Send a SIGTERM to the job ID JID.
+ * `jobs tail <JID>`: Print as a CF paste the last 20 lines of output
+   from the job ID JID.
+
 ## Colophon
 
 twke is named after the [ambuquad designated

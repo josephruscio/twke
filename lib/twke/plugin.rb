@@ -12,30 +12,12 @@ class Plugin
       end
     end
 
-    # Track all the available plugins
-    #
-    def plugins
-      @plugins ||= []
-    end
-
-    def loaded_plugins
-      @loaded_plugins ||= []
-    end
-
-    # Invoked to load this plugin. Will initialize and add to the
-    # loaded plugins list.
-    # TODO: Add initialization parameters here??
-    def load_plugin
-      Plugin.loaded_plugins << new()
-    end
-
     # Registers the current plugin with the system.
     #
     # Returns nothing.
     def inherited(plgn)
-      Plugin.plugins << plgn
-      Twke.plugin(plgn)
       super
+      Twke::PluginManager.register(plgn)
     end
   end
 

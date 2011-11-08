@@ -7,16 +7,13 @@ module Twke
 
   require 'conf'
   require 'routes'
+  require 'plugin_manager'
   require 'plugin'
   require 'job'
   require 'job_manager'
 
   def self.version
     File.read(File.join(File.dirname(__FILE__), '../VERSION')).chomp
-  end
-
-  def self.plugin(plgn)
-    puts "Registering plugin #{plgn.plugin_name}"
   end
 
   def self.start(scamp)
