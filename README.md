@@ -84,6 +84,47 @@ def add_routes(rp, opts)
 end
 ```
 
+## External Plugins
+
+By default, all plugins listed under the `plugins/` directory will be
+loaded at startup time. You can also specify additional external
+plugins to load at startup time using the `admin.load_plugins`
+configuration setting. External plugins can be loaded from a directory
+path on the file system or even from an external git repo.
+
+There are a couple limitations for external plugins. These may be
+addressed in the future:
+
+ * Plugins can not have any external dependencies are not listed in the
+   twke Gemfile.
+ * There is no support for post-clone operations (like bundle install)
+   when using an external GIT repo.
+
+### Loading external plugins from a directory
+
+For example:
+
+```
+set admin.load_plugins.darius.path "/home/albert/darius/plugins"
+```
+
+Will load all plugin files named `/home/albert/darius/plugins/*.rb` on
+startup.
+
+### Loading external plugins from a git repo
+
+For example:
+
+```
+set admin.load_plugins.darius.repo "https://github.com/albert/darius.git"
+set admin.load_plugins.darius.dir "plugins"
+```
+
+Will clone the git repo to a temporary directory and then load all
+plugin files named `*.rb` in the directory `plugins` of the git
+repo.
+
+
 ## Colophon
 
 twke is named after the [ambuquad designated
