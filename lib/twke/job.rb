@@ -2,8 +2,14 @@ require 'fileutils'
 
 module Twke
   class Job < EventMachine::Connection
+    attr_reader :start_time, :end_time, :pid, :command
+
     def initialize(params)
-      @output = ""
+      @start_time = params[:start_time]
+      @end_time = nil
+      @pid = params[:pid]
+      @command = params[:command]
+
       @opts = params
       @dfr = EM::DefaultDeferrable.new
 
@@ -15,19 +21,7 @@ module Twke
       super
     end
 
-    def pid
-      @opts[:pid]
-    end
-
     alias_method :jid, :pid
-
-    def start_time
-      @opts[:start_time]
-    end
-
-    def command
-      @opts[:command]
-    end
 
     def callback(&blk)
       @dfr.callback(&blk)
@@ -39,6 +33,10 @@ module Twke
 
     def output
       File.read(@out_filename)
+    end
+
+    def output_tail
+      %x{tail -n 20 #{@out_filename}}
     end
 
     def kill!
@@ -59,6 +57,7 @@ module Twke
     # Invoked when the process completes and is passed the status
     #
     def finished(status)
+      @end_time = Time.now
       if status.success?
         @dfr.succeed(self)
       else

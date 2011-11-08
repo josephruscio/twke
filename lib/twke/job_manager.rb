@@ -20,8 +20,15 @@ module Twke
     end
 
     class ProcessWatch
+      # How long do we keep finished jobs around?
+      FINISHED_JOB_WAIT_SECS = 1800
+
       def initialize
-        @procs = {}
+        # Active running jobs
+        @active = {}
+
+        # Finished queue -- entries are evicted after an hour
+        @finished = {}
 
         rd, wr = IO::pipe
 
@@ -34,19 +41,36 @@ module Twke
       def start
         conn = EM::watch(@watched_pids_fd[:rd], ProcessPipeWatch, self)
         conn.notify_readable = true
+
+        EM::PeriodicTimer.new(300) do
+          purge_finished_jobs
+        end
+      end
+
+      def purge_finished_jobs
+        now = Time.now
+        @finished.delete_if do |pid, job|
+          done = (now - job.end_time) > FINISHED_JOB_WAIT_SECS
+          job.cleanup if done
+          done
+        end
       end
 
       # Watch the PID and notify the spawned job
       def watch_pid(pid, sj)
-        @procs[pid] = sj
+        @active[pid] = sj
       end
 
-      def jobs
-        @procs.values
+      def active_jobs
+        @active.values.sort{|a, b| a.start_time <=> b.start_time }
+      end
+
+      def finished_jobs
+        @finished.values.sort{|a, b| a.end_time <=> b.end_time }
       end
 
       def job(id)
-        @procs[id]
+        @active[id] || @finished[id]
       end
 
       def alert_exit
@@ -77,10 +101,10 @@ module Twke
             # If there is a callback, invoke it. The process may
             # not belong to us.
             #
-            proc = @procs.delete(pid)
+            proc = @active.delete(pid)
             if proc
               proc.finished(status)
-              proc.cleanup
+              @finished[proc.pid] = proc
             end
           end
         end while pid
@@ -103,16 +127,18 @@ module Twke
 
       def list
         # Return a list of the jobs
-        return @process_watcher ? @process_watcher.jobs : []
+        jobs = { :active => [], :finished => [] }
+        return jobs unless @process_watcher
+
+        jobs[:active] = @process_watcher.active_jobs
+        jobs[:finished] = @process_watcher.finished_jobs
+        jobs
       end
 
-      def killjob(jid)
+      def getjob(jid)
         return nil unless @process_watcher
 
-        job = @process_watcher.job(jid)
-        return nil unless job
-
-        job.kill!
+        @process_watcher.job(jid)
       end
 
       #
