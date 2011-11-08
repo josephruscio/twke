@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module Twke
   module JobManager
     # Watch the read end of the SIGCLD notication pipe
@@ -73,7 +75,10 @@ module Twke
             # not belong to us.
             #
             proc = @procs.delete(pid)
-            proc.finished(status) if proc
+            if proc
+              proc.finished(status)
+              proc.cleanup
+            end
           end
         end while pid
       end
@@ -116,6 +121,12 @@ module Twke
       def spawn(cmdstr, opts = {})
         self.init
 
+        # All jobs have a temporary directory.
+        tmproot = ENV['TMPDIR'] || "/tmp"
+        jobtmpdir = File.join(tmproot, "jobs/job_#{rand 9999999}")
+
+        FileUtils.mkdir_p(jobtmpdir)
+
         rd, wr = IO::pipe
         start_time = Time.now
         pid = fork do
@@ -142,7 +153,7 @@ module Twke
             ENV[k] = v
           end if opts[:environ]
 
-          dir = opts[:dir] || ENV['PWD']
+          dir = opts[:dir] || jobtmpdir
 
           Dir.chdir(dir) do
             exec(cmdstr)
@@ -155,6 +166,8 @@ module Twke
         wr.close
 
         params = {
+          :chdir => opts[:dir] || jobtmpdir,
+          :tmpdir => jobtmpdir,
           :pid => pid,
           :command => cmdstr,
           :start_time => start_time,

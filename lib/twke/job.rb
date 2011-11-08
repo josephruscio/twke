@@ -4,6 +4,11 @@ module Twke
       @output = ""
       @opts = params
       @dfr = EM::DefaultDeferrable.new
+
+      # All output is sent immediately to disk
+      @out_filename = File.join(@opts[:tmpdir], "output.txt")
+      @out_file = File.open(@out_filename, "w+")
+      @out_file.sync = true
       super
     end
 
@@ -30,7 +35,7 @@ module Twke
     end
 
     def output
-      @output
+      File.read(@out_filename)
     end
 
     def kill!
@@ -41,7 +46,7 @@ module Twke
     def notify_readable
       begin
         result = @io.read_nonblock(1024)
-        @output += result
+        @out_file.write(result)
       rescue IO::WaitReadable
       rescue EOFError
         detach
@@ -60,6 +65,18 @@ module Twke
 
     def unbind
       @io.close
+      @out_file.fsync
+      @out_file.close
+      @out_file = nil
+    end
+
+    # Remove any temporary files
+    def cleanup
+      FileUtils.rm(@out_filename)
+
+      # XXX: could be rm-rf, but be safe for now. Might have
+      # problems if app creates files in $PWD
+      FileUtils.rmdir(@opts[:tmpdir])
     end
   end
 end
