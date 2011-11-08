@@ -154,10 +154,7 @@ module Twke
 
         wr.close
 
-        dfr = EM::DefaultDeferrable.new
-
         params = {
-          :deferrable => dfr,
           :pid => pid,
           :command => cmdstr,
           :start_time => start_time,

@@ -2,8 +2,8 @@ module Twke
   class Job < EventMachine::Connection
     def initialize(params)
       @output = ""
-      @dfr = params[:deferrable]
       @opts = params
+      @dfr = EM::DefaultDeferrable.new
       super
     end
 
@@ -51,7 +51,6 @@ module Twke
     # Invoked when the process completes and is passed the status
     #
     def finished(status)
-      return unless @dfr
       if status.success?
         @dfr.succeed(self)
       else
