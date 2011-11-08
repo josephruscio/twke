@@ -136,7 +136,7 @@ provides a fairly full-featured Job Control system.
 The following example demonstrates how to use the job control system
 from your plugin:
 
-```
+```ruby
 # Run /usr/bin/myapp
 #
 job = Twke::JobManager.spawn("/usr/bin/myapp --help", 
