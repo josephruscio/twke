@@ -125,6 +125,56 @@ plugin files named `*.rb` in the directory `plugins` of the git
 repo.
 
 
+## Job Control
+
+One of the main methods by which a plugin can perform a task is to
+spawn some external application. To assist this common pattern, Twke
+provides a fairly full-featured Job Control system.
+
+### Job Control Plugin Use
+
+The following example demonstrates how to use the job control system
+from your plugin:
+
+```
+# Run /usr/bin/myapp
+#
+job = Twke::JobManager.spawn("/usr/bin/myapp --help", 
+                             { :dir => "/tmp/workdir",
+                               :environ => {
+                                  "MYVAR" => "MY_VALUE"
+                               }})
+
+# Set a callback when the job succeeds
+job.callback do
+  puts "Job succeeded!"
+end
+
+# Set a callback for job failure (non-zero exit code or signaled)
+job.errback do
+  puts "Job failed! See output:"
+
+  # Output can be retrieved with the job method 'output'
+  puts job.output
+end
+
+# Send a SIGTERM to the job:
+job.kill!
+
+# Get the last 20 lines of output from the job
+puts job.output_tail
+```
+
+### Job Control Plugin
+
+The jobs plugin also provides a number of helpful commands:
+
+ * `jobs list`: List all active and finished jobs. Jobs persist for 30
+   minutes after completion to allow for checking outputs.
+ * `jobs kill <JID>`: Send a SIGTERM to the job ID JID.
+ * `jobs tail <JID>`: Print as a CF paste the last 20 lines of output
+   from the job ID JID.
+
 ## Colophon
 
 twke is named after the [ambuquad designated
