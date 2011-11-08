@@ -4,20 +4,52 @@ class Plugin::Jobs < Plugin
     rp.jobs do
       rp.route 'list' do |act|
         jobs = Twke::JobManager.list
-        if jobs.length == 0
-          act.say "No active jobs"
+
+        if jobs[:active].length == 0 && jobs[:finished].length == 0
+          act.say "No active or finished jobs."
           next
         end
 
-        str = jobs.inject("") do |out, job|
-          out += "ID: %d Cmd: '%s' Start time: %s\n" %
-            [job.pid, job.command, job.start_time.to_s]
+        str = ""
+        if jobs[:active].length > 0
+          str += "> Active Jobs:\n"
+          jobs[:active].each do |job|
+            str += "   ID: %d Cmd: '%s' Started: %s\n" %
+              [job.pid, job.command, job.start_time.to_s]
+          end
+          str += "\n"
         end
+
+        if jobs[:finished].length > 0
+          str += "> Finished Jobs:\n"
+          jobs[:finished].each do |job|
+            str += "   ID: %d Cmd: '%s' Started: %s, Finished: %s\n" %
+              [job.pid, job.command, job.start_time.to_s, job.end_time.to_s]
+          end
+        end
+
         act.paste str
       end
 
       rp.route /kill (?<jobid>[0-9]+)$/ do |act|
-        result = Twke::JobManager.killjob(act.jobid.to_i)
+        job = Twke::JobManager.getjob(act.jobid.to_i)
+        unless job
+          act.say "No such job: #{act.jobid}"
+          next
+        end
+
+        job.kill!
+      end
+
+      rp.route /tail (?<jobid>[0-9]+)$/ do |act|
+        job = Twke::JobManager.getjob(act.jobid.to_i)
+        unless job
+          act.say "No such job: #{act.jobid}"
+          next
+        end
+
+        out = job.output_tail
+        act.paste out
       end
     end
   end

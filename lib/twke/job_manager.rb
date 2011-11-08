@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module Twke
   module JobManager
     # Watch the read end of the SIGCLD notication pipe
@@ -18,10 +20,20 @@ module Twke
     end
 
     class ProcessWatch
+      # How long do we keep finished jobs around?
+      FINISHED_JOB_WAIT_SECS = 1800
+
       def initialize
-        @procs = {}
+        # Active running jobs
+        @active = {}
+
+        # Finished queue -- entries are evicted after an hour
+        @finished = {}
 
         rd, wr = IO::pipe
+
+        rd.close_on_exec = true
+        wr.close_on_exec = true
 
         @watched_pids_fd = {:rd => rd, :wr => wr}
       end
@@ -29,19 +41,36 @@ module Twke
       def start
         conn = EM::watch(@watched_pids_fd[:rd], ProcessPipeWatch, self)
         conn.notify_readable = true
+
+        EM::PeriodicTimer.new(300) do
+          purge_finished_jobs
+        end
+      end
+
+      def purge_finished_jobs
+        now = Time.now
+        @finished.delete_if do |pid, job|
+          done = (now - job.end_time) > FINISHED_JOB_WAIT_SECS
+          job.cleanup if done
+          done
+        end
       end
 
       # Watch the PID and notify the spawned job
       def watch_pid(pid, sj)
-        @procs[pid] = sj
+        @active[pid] = sj
       end
 
-      def jobs
-        @procs.values
+      def active_jobs
+        @active.values.sort{|a, b| a.start_time <=> b.start_time }
+      end
+
+      def finished_jobs
+        @finished.values.sort{|a, b| a.end_time <=> b.end_time }
       end
 
       def job(id)
-        @procs[id]
+        @active[id] || @finished[id]
       end
 
       def alert_exit
@@ -72,8 +101,11 @@ module Twke
             # If there is a callback, invoke it. The process may
             # not belong to us.
             #
-            proc = @procs.delete(pid)
-            proc.finished(status) if proc
+            proc = @active.delete(pid)
+            if proc
+              proc.finished(status)
+              @finished[proc.pid] = proc
+            end
           end
         end while pid
       end
@@ -95,16 +127,18 @@ module Twke
 
       def list
         # Return a list of the jobs
-        return @process_watcher ? @process_watcher.jobs : []
+        jobs = { :active => [], :finished => [] }
+        return jobs unless @process_watcher
+
+        jobs[:active] = @process_watcher.active_jobs
+        jobs[:finished] = @process_watcher.finished_jobs
+        jobs
       end
 
-      def killjob(jid)
+      def getjob(jid)
         return nil unless @process_watcher
 
-        job = @process_watcher.job(jid)
-        return nil unless job
-
-        job.kill!
+        @process_watcher.job(jid)
       end
 
       #
@@ -113,8 +147,14 @@ module Twke
       # be invoked if the command succeeds or else the errback will be
       # invoked. Both callbacks are passed the program output.
       #
-      def spawn(cmdstr)
+      def spawn(cmdstr, opts = {})
         self.init
+
+        # All jobs have a temporary directory.
+        tmproot = ENV['TMPDIR'] || "/tmp"
+        jobtmpdir = File.join(tmproot, "jobs/job_#{rand 9999999}")
+
+        FileUtils.mkdir_p(jobtmpdir)
 
         rd, wr = IO::pipe
         start_time = Time.now
@@ -137,18 +177,27 @@ module Twke
           $stdout.reopen wr
           $stderr.reopen wr
 
-          exec(cmdstr)
+          # Set environs if specified
+          opts[:environ].each_pair do |k, v|
+            ENV[k] = v
+          end if opts[:environ]
+
+          dir = opts[:dir] || jobtmpdir
+
+          Dir.chdir(dir) do
+            exec(cmdstr)
+          end
 
           # Shouldn't get here unless the exec fails
           exit 127
         end
 
         wr.close
-
-        dfr = EM::DefaultDeferrable.new
+        rd.close_on_exec = true
 
         params = {
-          :deferrable => dfr,
+          :chdir => opts[:dir] || jobtmpdir,
+          :tmpdir => jobtmpdir,
           :pid => pid,
           :command => cmdstr,
           :start_time => start_time,
@@ -160,7 +209,7 @@ module Twke
         # Watch the process to notify when it completes
         @process_watcher.watch_pid(pid, d)
 
-        return dfr
+        return d
       end
     end
   end
