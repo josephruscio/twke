@@ -51,6 +51,17 @@ class Plugin::Jobs < Plugin
         out = job.output_tail
         act.paste out
       end
+
+      rp.route /out(put|) (?<jobid>[0-9]+)$/ do |act|
+        job = Twke::JobManager.getjob(act.jobid.to_i)
+        unless job
+          act.say "No such job: #{act.jobid}"
+          next
+        end
+
+        out = job.output
+        act.paste out
+      end
     end
   end
 end
