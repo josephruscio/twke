@@ -5,6 +5,7 @@ gem 'rack', '1.3.3'
 gem 'yajl-ruby', :require => [ 'yajl', 'yajl/json_gem' ]
 
 gem 'faraday', '~> 0.7.5'
+gem "nokogiri", "~> 1.5.0"
 
 #gem "scamp", "~> 0.1.1"
 #gem "scamp", :path => ENV['HOME'] + "/git/clones/Scamp"
