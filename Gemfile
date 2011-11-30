@@ -9,7 +9,7 @@ gem "nokogiri", "~> 1.5.0"
 
 #gem "scamp", "~> 0.1.1"
 #gem "scamp", :path => ENV['HOME'] + "/git/clones/Scamp"
-gem "scamp", :git => 'https://github.com/mheffner/Scamp.git', :branch => 'feature/pass_action_context'
+gem "scamp", :git => 'https://github.com/wjessop/Scamp.git', :branch => 'master'
 
 #gem "can-has-lolcat", "~> 1.1.0"
 #gem "can-has-lolcat", :path => "../can-has-lolcat"
