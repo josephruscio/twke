@@ -39,8 +39,6 @@ LOG="$HOME/twke.log"
 
 BUNDLE_DIR="/tmp/twke_bundle_cache"
 
-export PATH="$PATH:/usr/local/bin:$HOME/git/awsam/bin"
-
 # Load RVM into a shell session *as a function*
 if [[ -s "$HOME/.rvm/scripts/rvm" ]] ; then
 	# First try to load from a user install
