@@ -175,6 +175,10 @@ The jobs plugin also provides a number of helpful commands:
  * `jobs tail <JID>`: Print as a CF paste the last 20 lines of output
    from the job ID JID.
 
+## More documentation
+
+See the [wiki](https://github.com/josephruscio/twke/wiki) for more documentation.
+
 ## Colophon
 
 twke is named after the [ambuquad designated
