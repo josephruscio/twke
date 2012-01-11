@@ -33,7 +33,7 @@ class Plugin::Config < Plugin
       begin
         as_eval = eval(valstr)
         set_var(act, varstr, as_eval)
-      rescue
+      rescue Exception, SyntaxError
         # Fall back to just a string
         set_var(act, varstr, valstr)
       end
