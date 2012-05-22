@@ -21,6 +21,8 @@ gem 'hpricot', "~> 0.8.5"
 
 # rollout
 gem "redis", "~> 2.2.2"
+gem "hiredis", "~> 0.4.5"
+gem "em-synchrony"
 gem "rollout", "~> 1.1.0"
 
 # Add dependencies to develop your gem here.
