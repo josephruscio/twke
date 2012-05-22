@@ -52,7 +52,7 @@ private
 
     if redis_host
       host, port = redis_host.split(':')
-      @redis = Redis.new(:host => host, :port => port)
+      @redis = Redis.new(:host => host, :port => port, :driver => :synchrony)
     else
       @redis = Redis.new
     end
