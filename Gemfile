@@ -13,7 +13,7 @@ gem "scamp", "~> 1.0.1"
 
 #gem "can-has-lolcat", "~> 1.1.0"
 #gem "can-has-lolcat", :path => "../can-has-lolcat"
-gem "can-has-lolcat", :git => 'https://github.com/josephruscio/can-has-lolcat.git', :branch => 'feature/add-puppeh-support'
+#gem "can-has-lolcat", :git => 'https://github.com/josephruscio/can-has-lolcat.git', :branch => 'feature/add-puppeh-support'
 
 gem "papertrail-cli", "~> 0.8.2"
 

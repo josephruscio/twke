@@ -40,7 +40,6 @@ Gem::Specification.new do |s|
     "plugins/github.rb",
     "plugins/jenkins.rb",
     "plugins/jobs.rb",
-    "plugins/lolcats.rb",
     "plugins/run.rb",
     "plugins/twiki.rb",
     "test/helper.rb",
@@ -61,7 +60,6 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<yajl-ruby>, [">= 0"])
       s.add_runtime_dependency(%q<faraday>, ["~> 0.7.5"])
       s.add_runtime_dependency(%q<scamp>, [">= 0"])
-      s.add_runtime_dependency(%q<can-has-lolcat>, [">= 0"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
@@ -71,7 +69,6 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<yajl-ruby>, [">= 0"])
       s.add_dependency(%q<faraday>, ["~> 0.7.5"])
       s.add_dependency(%q<scamp>, [">= 0"])
-      s.add_dependency(%q<can-has-lolcat>, [">= 0"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
@@ -82,7 +79,6 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<yajl-ruby>, [">= 0"])
     s.add_dependency(%q<faraday>, ["~> 0.7.5"])
     s.add_dependency(%q<scamp>, [">= 0"])
-    s.add_dependency(%q<can-has-lolcat>, [">= 0"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
