@@ -48,6 +48,28 @@ class Plugin::Rollout < Plugin
 private
 
   def rollout!
+    if Twke::Conf.get("rollout.zookeeper.enabled")
+      rollout_zk!
+    else
+      rollout_redis!
+    end
+  end
+
+  def rollout_zk!
+    zk_hosts = Twke::Conf.get("rollout.zookeeper.hosts")
+    zk_node = Twke::Conf.get("rollout.zookeeper.node") or "/rollout/users"
+
+    if zk_hosts
+      zookeeper = ZK.new(zk_hosts)
+    else
+      zookeeper = ZK.new
+    end
+
+    storage = Rollout::Zookeeper::Storage.new(zookeeper, zk_node)
+    @rollout = ::Rollout.new(storage)
+  end
+
+  def rollout_redis!
     redis_host = Twke::Conf.get("rollout.redis.host")
 
     if redis_host
