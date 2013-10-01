@@ -57,7 +57,7 @@ private
 
   def rollout_zk!
     zk_hosts = Twke::Conf.get("rollout.zookeeper.hosts")
-    zk_node = Twke::Conf.get("rollout.zookeeper.node") or "/rollout/users"
+    zk_node = Twke::Conf.get("rollout.zookeeper.node") || "/rollout/users"
 
     if zk_hosts
       zookeeper = ZK.new(zk_hosts)
