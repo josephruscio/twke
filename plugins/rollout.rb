@@ -65,7 +65,7 @@ private
       zookeeper = ZK.new
     end
 
-    storage = Rollout::Zookeeper::Storage.new(zookeeper, zk_node)
+    storage = ::Rollout::Zookeeper::Storage.new(zookeeper, zk_node)
     @rollout = ::Rollout.new(storage)
   end
 
