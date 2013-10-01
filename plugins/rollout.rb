@@ -21,7 +21,7 @@ class Plugin::Rollout < Plugin
 
       # Query the current status of a feature
       rp.route /info (?<feature>.+)/ do |act|
-        act.paste rollout.info(act.feature.to_sym).to_s
+        act.paste rollout.get(act.feature.to_sym).to_hash.to_s
       end
 
       # Activate/Deactivate groups
@@ -57,7 +57,7 @@ private
 
   def rollout_zk!
     zk_hosts = Twke::Conf.get("rollout.zookeeper.hosts")
-    zk_node = Twke::Conf.get("rollout.zookeeper.node") or "/rollout/users"
+    zk_node = Twke::Conf.get("rollout.zookeeper.node") || "/rollout/users"
 
     if zk_hosts
       zookeeper = ZK.new(zk_hosts)
