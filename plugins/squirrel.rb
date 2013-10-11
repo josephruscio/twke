@@ -224,8 +224,9 @@ private
         act.say "Successfully refreshed environment for %s %s (%d seconds)" %
           [app, env, secs]
       when 'migrate'
-        act.say "Successfully run migrations for %s %s (%d seconds)" %
+        act.say "Successfully ran migrations for %s %s (%d seconds)" %
           [app, env, secs]
+        act.paste job.output
       when 'maintenance'
         act.say "Successfully set maintenance mode to %s for %s %s (%d seconds)" %
           [opts[:mode].to_s, app, env, secs]
