@@ -69,9 +69,14 @@ module Twke
                                 $options)
       end
 
-      def add(trigger, *opts, &blk)
+      def add(trigger, opts = {}, &blk)
+        # By default, only match to text messages (not pastes)
+        options = opts.clone
+        options[:conditions] ||= {}
+        options[:conditions][:type] = :text unless options[:conditions][:type]
+
         cmd do
-          match(trigger, *opts) do
+          match(trigger, options) do
             # This yields the action (ie, room) context to the
             # callback. All actions that could be done in the Scamp
             # 'match' context can be performed on the yielded
