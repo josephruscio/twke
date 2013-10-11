@@ -32,10 +32,11 @@ class Plugin::Squirrel < Plugin
 
   def initialize
     super
-    @shipping = false
   end
 
   def add_routes(rp, opts)
+    @shipping = {}
+
     rp.ship do
       # 'ship help'
       #
@@ -145,8 +146,20 @@ private
     Twke::Conf.get('squirrel.apps') || []
   end
 
-  def is_shipping?
-    @shipping
+  def shipping_key(app, env)
+    "%s::%s" % [app, env]
+  end
+
+  def is_shipping?(app, env)
+    @shipping[shipping_key(app, env)]
+  end
+
+  def start_shipping(app, env)
+    @shipping[shipping_key(app, env)]
+  end
+
+  def finish_shipping(app, env)
+    @shipping.delete(shipping_key(app, env))
   end
 
   #
@@ -161,11 +174,6 @@ private
       return
     end
 
-    if is_shipping?
-      act.say "I can only ship one thing at a time! Check `jobs list` for pending jobs."
-      return
-    end
-
     app = act.app.strip
     unless apps.include?(app)
       act.say "Sorry, I don't know the app name '%s'. I support: %s" %
@@ -175,6 +183,11 @@ private
 
     env = act.env.chomp.strip
     env = 'staging' unless env.length > 0
+
+    if is_shipping?(app, env)
+      act.say "I can only ship to '#{app}::#{env}' one at a time! Check `jobs list` for pending jobs."
+      return
+    end
 
     params = {
       :application => app,
@@ -200,7 +213,7 @@ private
     args = params.map{ |p| "--#{p[0]} #{p[1]}" }.join(" ")
     extra_args = "#{opts[:mode]}" if cmd == "maintenance"
 
-    @shipping = true
+    start_shipping(app, env)
     d = Twke::JobManager.spawn("#{runcmd} #{args} #{cmd} #{extra_args}",
                                :environ => environ)
     d.callback do |job|
@@ -244,14 +257,14 @@ private
           [cmd, app, env, secs]
       end
 
-      @shipping = false
+      finish_shipping(app, env)
     end
 
     d.errback do |job|
-      act.say "Failed to run deploy command:"
+      act.say "Failed to ship %s(%s):" % [app, env]
       act.paste job.output_tail
       act.play 'trombone'
-      @shipping = false
+      finish_shipping(app, env)
     end
 
     jid = "[jid: #{d.jid}]"
