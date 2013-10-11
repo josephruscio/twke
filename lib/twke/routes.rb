@@ -9,7 +9,7 @@ module Twke
       def route(trigger, *opts, &blk)
         if trigger.class == Regexp
           if prefix.length > 0 && !no_prefix?(*opts)
-            trigger = Regexp.new("#{prefix} #{trigger.to_s}")
+            trigger = Regexp.new("^#{prefix} #{trigger.to_s}")
           end
 
           Routes.add(trigger, *opts, &blk)
