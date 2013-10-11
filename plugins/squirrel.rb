@@ -37,6 +37,8 @@ class Plugin::Squirrel < Plugin
   def add_routes(rp, opts)
     @shipping = {}
 
+    load_ship_images
+
     rp.ship do
       # 'ship help'
       #
@@ -252,7 +254,8 @@ private
         act.say "Successfully shipped %s to %s %s (%d seconds)" %
           [params[:branch], app, env, secs]
 
-        act.say ShippedSquirrelPNG if params[:environment] == 'production'
+        image_url = get_ship_image
+        act.say image_url if params[:environment] == 'production'
       else
         act.say "Successfully finished the command: %s for %s %s (%d seconds)" %
           [cmd, app, env, secs]
@@ -292,4 +295,34 @@ private
     act.say 'Fire in the hole!' if params[:environment] == 'production'
 
   end
+
+  def load_ship_images
+    baseurl = Twke::Conf.get('squirrel.images_baseurl')
+    unless baseurl
+      @ship_images = {
+        :fixed => ShippedSquirrelPNG
+      }
+      return
+    end
+
+    count = Twke::Conf.get('squirrel.images_count').to_i
+    suffix = Twke::Conf.get('squirrel.images_suffix')
+
+    @ship_images = {
+      :baseurl => baseurl,
+      :count => count,
+      :suffix => suffix
+    }
+  end
+
+  def get_ship_image
+    if @ship_images[:fixed]
+      return @ship_images[:fixed]
+    end
+
+    r = rand(@ship_images[:count])
+
+    "%s%d%s" % [@ship_images[:baseurl], r, @ship_images[:suffix]]
+  end
+
 end
