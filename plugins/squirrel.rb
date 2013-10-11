@@ -262,7 +262,7 @@ private
 
     d.errback do |job|
       act.say "Failed to ship %s(%s):" % [app, env]
-      act.paste job.output_tail
+      act.paste job.output
       act.play 'trombone'
       finish_shipping(app, env)
     end
