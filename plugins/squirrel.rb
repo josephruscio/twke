@@ -23,6 +23,23 @@
 #
 #     Hash of environment variables to pass to ship command.
 #
+#   squirrel.max_age_secs = <integer>
+#
+#     How old can a branch be before it's rejected and
+#     requires a forced ship.
+#
+#   squirrel.images_baseurl
+#   squirrel.images_count
+#   squirrel.images_suffix
+#
+#     Ship and be rewarded!
+#
+#     Configure a set of rotating images that are displayed when code
+#     is successfully shipped to production. This lets everyone know
+#     it's time to party. By default you'll see some furry creatures
+#     lending a helping hand for your celebration.
+#
+#
 # Help:
 #  For a list of supported shipping commands, run `ship help`.
 ####
