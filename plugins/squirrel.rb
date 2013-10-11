@@ -54,6 +54,12 @@ I support the following ship commands:
 
   Ships <branch> to <app> with environment staging or production.
 
+> ship <branch> to <app> (staging|production) force
+
+  Ships <branch> to <app> with environment staging or production.
+  If <branch> is determined to be too old, this will force ship
+  the branch.
+
 > ship <app> environ [staging|production]
 
   Ships the latest app environment to <app> and restarts the app.
@@ -90,6 +96,16 @@ EOS
       #
       rp.route /(?<branch>[^ ]+)[ ]{1,}to[ ]{1,}(?<app>[^ ]+)(?<env>([ ]{1,}(staging|production)){0,1})$/ do |act|
         shipit(act, 'deploy', :branch => act.branch)
+      end
+
+      # 'ship <branch> to <app> (staging|production) force'
+      #
+      # Ships the 'branch' for 'app' to the particular
+      # environment. This enables a "forced" ship meaning branch age
+      # will not be checked.
+      #
+      rp.route /(?<branch>[^ ]+)[ ]{1,}to[ ]{1,}(?<app>[^ ]+)(?<env>([ ]{1,}(staging|production)))[ ]{1,}force$/ do |act|
+        shipit(act, 'deploy', :branch => act.branch, :force => true)
       end
 
       # 'ship <app> environ [staging|production]'
@@ -165,6 +181,12 @@ private
       :environment => env,
       :branch => opts[:branch] || 'master'
     }
+
+    params[:force] = "" if opts[:force]
+
+    if Twke::Conf.get('squirrel.max_age_secs')
+      params[:max_age_secs] = Twke::Conf.get('squirrel.max_age_secs').to_i
+    end
 
     # Check if there is additional environment variables.
     environ = Twke::Conf.get('squirrel.environ')
