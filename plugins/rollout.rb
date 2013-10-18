@@ -1,8 +1,6 @@
 require 'redis'
 require 'rollout'
 
-require 'pry'
-
 # Rollout requires a "user object"
 class FakeUser < Struct.new(:id); end
 
