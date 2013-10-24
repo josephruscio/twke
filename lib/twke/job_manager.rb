@@ -198,7 +198,6 @@ module Twke
           dir = opts[:dir] || jobtmpdir
 
           Dir.chdir(dir) do
-            ENV.each {|k, v| puts "#{k} = #{v}"}
             exec(cmdstr)
           end
 
