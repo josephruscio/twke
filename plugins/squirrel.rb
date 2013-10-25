@@ -174,7 +174,7 @@ private
   end
 
   def start_shipping(app, env)
-    @shipping[shipping_key(app, env)]
+    @shipping[shipping_key(app, env)] = true
   end
 
   def finish_shipping(app, env)
