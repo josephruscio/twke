@@ -39,6 +39,10 @@ class Plugin::Rollout < Plugin
       rp.route /deactivate_user (?<feature>.+) (?<user_id>.+)/ do |act|
         rollout_op(act){rollout.deactivate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
       end
+
+      rp.route /percentage (?<feature>.+) (?<percentage>.+)/ do |act|
+        rollout_opt(act){ rollout.activate_percentage(act.feature.to_sym, Integer(act.percentage)) }
+      end
     end
 
   end
