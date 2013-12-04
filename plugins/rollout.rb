@@ -41,7 +41,7 @@ class Plugin::Rollout < Plugin
       end
 
       rp.route /percentage (?<feature>.+) (?<percentage>.+)/ do |act|
-        rollout_opt(act){ rollout.activate_percentage(act.feature.to_sym, Integer(act.percentage)) }
+        rollout_op(act){ rollout.activate_percentage(act.feature.to_sym, Integer(act.percentage)) }
       end
     end
 
