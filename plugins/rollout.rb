@@ -24,7 +24,11 @@ class Plugin::Rollout < Plugin
 
       # Activate/Deactivate groups
       rp.route /activate_group (?<feature>.+) (?<group>.+)/ do |act|
-        rollout_op(act){rollout.activate_group(act.feature.to_sym, act.group.to_sym)}
+        success = rollout_op(act){rollout.activate_group(act.feature.to_sym, act.group.to_sym)}
+
+        if success && act.group.to_sym == :all
+          act.play 'rollout'
+        end
       end
 
       rp.route /deactivate_group (?<feature>.+) (?<group>.+)/ do |act|
@@ -91,8 +95,10 @@ private
   def rollout_op(act)
     if yield
       act.say "Succeeded."
+      true
     else
       act.say "Failed!"
+      false
     end
   end
 
