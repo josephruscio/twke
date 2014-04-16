@@ -56,7 +56,11 @@ private
   end
 
   def rollout_zk!
-    zk_hosts = Twke::Conf.get("rollout.zookeeper.hosts")
+    @rollout = make_rollout(Twke::Conf.get("rollout.zookeeper.hosts"))
+    @rollout_staging = make_rollout(Twke::Conf.get("rollout.staging.zookeeper.hosts"))
+  end
+
+  def make_rollout(zk_hosts)
     zk_node = Twke::Conf.get("rollout.zookeeper.node") || "/rollout/users"
 
     if zk_hosts
