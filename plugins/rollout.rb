@@ -22,9 +22,9 @@ class Plugin::Rollout < Plugin
 
     rp.rollout do
 
-      rollouts = [{prefix: "", rollout: @rollout}]
+      rollouts = [{:prefix => "", :rollout => @rollout}]
       if @rollout_staging
-        rollouts << {prefix: "staging ", rollout: @rollout_staging}
+        rollouts << {:prefix => "staging ", :rollout => @rollout_staging}
       end
 
       rollouts.each do |conf|
