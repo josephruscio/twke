@@ -1,8 +1,6 @@
 require 'redis'
 require 'rollout'
 
-require 'pry'
-
 # Rollout requires a "user object"
 class FakeUser < Struct.new(:id); end
 
@@ -21,7 +19,7 @@ class Plugin::Rollout < Plugin
 
       # Query the current status of a feature
       rp.route /info (?<feature>.+)/ do |act|
-        act.paste rollout.info(act.feature.to_sym).to_s
+        act.paste rollout.get(act.feature.to_sym).to_hash.to_s
       end
 
       # Activate/Deactivate groups
@@ -48,6 +46,28 @@ class Plugin::Rollout < Plugin
 private
 
   def rollout!
+    if Twke::Conf.get("rollout.zookeeper.enabled")
+      rollout_zk!
+    else
+      rollout_redis!
+    end
+  end
+
+  def rollout_zk!
+    zk_hosts = Twke::Conf.get("rollout.zookeeper.hosts")
+    zk_node = Twke::Conf.get("rollout.zookeeper.node") || "/rollout/users"
+
+    if zk_hosts
+      zookeeper = ZK.new(zk_hosts)
+    else
+      zookeeper = ZK.new
+    end
+
+    storage = ::Rollout::Zookeeper::Storage.new(zookeeper, zk_node)
+    @rollout = ::Rollout.new(storage)
+  end
+
+  def rollout_redis!
     redis_host = Twke::Conf.get("rollout.redis.host")
 
     if redis_host
