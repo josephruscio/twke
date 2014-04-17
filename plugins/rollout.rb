@@ -22,40 +22,43 @@ class Plugin::Rollout < Plugin
 
     rp.rollout do
 
-      rollouts = [{:prefix => "", :rollout => @rollout}]
-      if @rollout_staging
-        rollouts << {:prefix => "staging ", :rollout => @rollout_staging}
+      rollouts = {:production => @rollout, :staging => @rollout_staging}
+
+      # Query the current status of a feature
+      rp.route /info (?<feature>\w+)\s*(?<env>\w+)?$/ do |act|
+        with_rollout(rollouts, act) do |ro|
+          act.paste ro.get(act.feature.to_sym).to_hash.to_s
+        end
       end
 
-      rollouts.each do |conf|
-
-        # Query the current status of a feature
-        rp.route /#{conf[:prefix]}info (?<feature>.+)/ do |act|
-          act.paste conf[:rollout].get(act.feature.to_sym).to_hash.to_s
+      # Activate/Deactivate groups
+      rp.route /activate_group (?<feature>\w+) (?<group>\w+)\s*(?<env>\w+)?$/ do |act|
+        with_rollout(rollouts, act) do |ro|
+          rollout_op(act){ro.activate_group(act.feature.to_sym, act.group.to_sym)}
+          act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
+      end
 
-        # Activate/Deactivate groups
-        rp.route /#{conf[:prefix]}activate_group (?<feature>.+) (?<group>.+)/ do |act|
-          rollout_op(act){conf[:rollout].activate_group(act.feature.to_sym, act.group.to_sym)}
-          act.paste conf[:rollout].get(act.feature.to_sym).to_hash.to_s
+      rp.route /deactivate_group (?<feature>\w+) (?<group>\w+)\s*(?<env>\w+)?$/ do |act|
+        with_rollout(rollouts, act) do |ro|
+          rollout_op(act){ro.deactivate_group(act.feature.to_sym, act.group.to_sym)}
+          act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
+      end
 
-        rp.route /#{conf[:prefix]}deactivate_group (?<feature>.+) (?<group>.+)/ do |act|
-          rollout_op(act){conf[:rollout].deactivate_group(act.feature.to_sym, act.group.to_sym)}
-          act.paste conf[:rollout].get(act.feature.to_sym).to_hash.to_s
+      # Activate/Deactivate users
+      rp.route /activate_user (?<feature>\w+) (?<user_id>\w+)\s*(?<env>\w+)?$/ do |act|
+        with_rollout(rollouts, act) do |ro|
+          rollout_op(act){ro.activate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
+          act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
+      end
 
-        # Activate/Deactivate users
-        rp.route /#{conf[:prefix]}activate_user (?<feature>.+) (?<user_id>.+)/ do |act|
-          rollout_op(act){conf[:rollout].activate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
-          act.paste conf[:rollout].get(act.feature.to_sym).to_hash.to_s
+      rp.route /deactivate_user (?<feature>\w+) (?<user_id>\w+)\s*(?<env>\w+)?$/ do |act|
+        with_rollout(rollouts, act) do |ro|
+          rollout_op(act){ro.deactivate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
+          act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
-
-        rp.route /#{conf[:prefix]}deactivate_user (?<feature>.+) (?<user_id>.+)/ do |act|
-          rollout_op(act){conf[:rollout].deactivate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
-          act.paste conf[:rollout].get(act.feature.to_sym).to_hash.to_s
-        end
-
       end
 
     end
@@ -63,6 +66,17 @@ class Plugin::Rollout < Plugin
   end
 
 private
+
+  def with_rollout(rollouts, act)
+    env = (act.env == nil ? :production : act.env.to_sym)
+    ro = rollouts[env]
+    if !ro
+      act.paste "No rollout for environment #{env} found"
+      return
+    end
+    yield ro if block_given?
+  end
+
 
   def rollout!
     if Twke::Conf.get("rollout.zookeeper.enabled")
