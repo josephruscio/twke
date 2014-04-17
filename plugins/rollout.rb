@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'redis'
 require 'rollout'
 
@@ -17,7 +18,24 @@ class Plugin::Rollout < Plugin
   # Add routes
   def add_routes(rp, opts)
 
-    # initialize things
+    # ░░░░░░░▄▄▄▄█████████████▄▄▄░░░░░░░ #
+    # ████▄▀████████▀▀▀▀▀▀████████▀▄████ #
+    # ▀████░▀██████▄▄░░░░▄▄██████▀░████▀ #
+    # ░███▀▀█▄▄░▀▀██████████▀▀░▄▄█▀▀███░ #
+    # ░████▄▄▄▀▀█▄░░░▀▀▀▀░░░▄█▀▀▄▄▄████░ #
+    # ░░██▄▄░▀▀████░██▄▄██░████▀▀░▄▄██░░ #
+    # ░░░▀████▄▄▄██░██████░██▄▄▄████▀░░░ #
+    # ░░██▄▀▀▀▀▀▀▀▀░░████░░▀▀▀▀▀▀▀▀▄██░░ #
+    # ░░░██░░░░░░░░░░████░░░░░░░░░░██░░░ #
+    # ░░░███▄▄░░░░▄█░████░█▄░░░░▄▄███░░░ #
+    # ░░░███████░███░████░███░███████░░░ #
+    # ░░░███████░███░████░███░███████░░░ #
+    # ░░░███████░███░▀▀▀▀░███░███████░░░ #
+    # ░░░███████░████████████░███████░░░ #
+    # ░░░░▀█████░███░▄▄▄▄░███░█████▀░░░░ #
+    # ░░░░░░░░▀▀░██▀▄████▄░██░▀▀░░░░░░░░ #
+    # ░░░░░░░░░░░░▀░██████░▀░░░░░░░░░░░░ #
+    # AUTOBOTS - ROLL OUT!               #
     rollout!
 
     rp.rollout do
@@ -26,21 +44,21 @@ class Plugin::Rollout < Plugin
 
       # Query the current status of a feature
       rp.route /info (?<feature>\w+)\s*(?<env>\w+)?$/ do |act|
-        with_rollout(rollouts, act) do |ro|
+        with_rollout(act) do |ro|
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
 
       # Activate/Deactivate groups
       rp.route /activate_group (?<feature>\w+) (?<group>\w+)\s*(?<env>\w+)?$/ do |act|
-        with_rollout(rollouts, act) do |ro|
+        with_rollout(act) do |ro|
           rollout_op(act){ro.activate_group(act.feature.to_sym, act.group.to_sym)}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
 
       rp.route /deactivate_group (?<feature>\w+) (?<group>\w+)\s*(?<env>\w+)?$/ do |act|
-        with_rollout(rollouts, act) do |ro|
+        with_rollout(act) do |ro|
           rollout_op(act){ro.deactivate_group(act.feature.to_sym, act.group.to_sym)}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
@@ -48,14 +66,14 @@ class Plugin::Rollout < Plugin
 
       # Activate/Deactivate users
       rp.route /activate_user (?<feature>\w+) (?<user_id>\w+)\s*(?<env>\w+)?$/ do |act|
-        with_rollout(rollouts, act) do |ro|
+        with_rollout(act) do |ro|
           rollout_op(act){ro.activate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
 
       rp.route /deactivate_user (?<feature>\w+) (?<user_id>\w+)\s*(?<env>\w+)?$/ do |act|
-        with_rollout(rollouts, act) do |ro|
+        with_rollout(act) do |ro|
           rollout_op(act){ro.deactivate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
@@ -67,11 +85,11 @@ class Plugin::Rollout < Plugin
 
 private
 
-  def with_rollout(rollouts, act)
+  def with_rollout(act)
     env = (act.env == nil ? :production : act.env.to_sym)
-    ro = rollouts[env]
+    ro = @rollouts[env]
     if !ro
-      act.paste "No rollout for environment #{env} found"
+      act.paste "No rollout for environment #{env} found. Known environments: #{@rollouts.keys.inspect}"
       return
     end
     yield ro if block_given?
@@ -87,8 +105,11 @@ private
   end
 
   def rollout_zk!
-    @rollout = make_rollout(Twke::Conf.get("rollout.zookeeper.hosts"))
-    @rollout_staging = make_rollout(Twke::Conf.get("rollout.staging.zookeeper.hosts"))
+    @rollouts = {}
+    @rollouts[:production] = make_rollout(Twke::Conf.get("rollout.zookeeper.hosts"))
+    Twke::Conf.list("rollout.zookeeper.hosts").each do |suffix|
+      @rollouts[suffix.to_sym] = make_rollout(Twke::Conf.get("rollout.zookeeper.hosts.#{suffix}"))
+    end
   end
 
   # makes a new rollout and returns it
