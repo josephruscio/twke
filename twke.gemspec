@@ -4,15 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{twke}
-  s.version = "0.3.0"
+  s.name = "twke"
+  s.version = "0.3.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Joseph Ruscio", "Mike Heffner"]
-  s.date = %q{2011-11-08}
-  s.default_executable = %q{twke}
-  s.description = %q{The ambuquad that has your back.}
-  s.email = %q{joe@ruscio.org}
+  s.date = "2013-10-18"
+  s.description = "The ambuquad that has your back."
+  s.email = "joe@ruscio.org"
   s.executables = ["twke"]
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -27,6 +26,7 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "bin/twke",
+    "contrib/respawn_twke.sh",
     "dot.rvmrc",
     "lib/twke.rb",
     "lib/twke/conf.rb",
@@ -41,52 +41,82 @@ Gem::Specification.new do |s|
     "plugins/jenkins.rb",
     "plugins/jobs.rb",
     "plugins/lolcats.rb",
+    "plugins/papertrail.rb",
+    "plugins/pugme.rb",
+    "plugins/rollout.rb",
+    "plugins/ronswanson.rb",
     "plugins/run.rb",
+    "plugins/snow.rb",
+    "plugins/squirrel.rb",
     "plugins/twiki.rb",
     "test/helper.rb",
     "test/test_conf.rb",
     "twke.gemspec"
   ]
-  s.homepage = %q{http://github.com/josephruscio/twke}
+  s.homepage = "http://github.com/josephruscio/twke"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.6.2}
-  s.summary = %q{Bidi-Bidi-Bidi!}
+  s.rubygems_version = "2.0.3"
+  s.summary = "Bidi-Bidi-Bidi!"
 
   if s.respond_to? :specification_version then
-    s.specification_version = 3
+    s.specification_version = 4
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rack>, ["= 1.3.3"])
       s.add_runtime_dependency(%q<yajl-ruby>, [">= 0"])
       s.add_runtime_dependency(%q<faraday>, ["~> 0.7.5"])
+      s.add_runtime_dependency(%q<nokogiri>, ["~> 1.5.0"])
+      s.add_runtime_dependency(%q<eventmachine>, ["~> 1.0.3"])
       s.add_runtime_dependency(%q<scamp>, [">= 0"])
       s.add_runtime_dependency(%q<can-has-lolcat>, [">= 0"])
+      s.add_runtime_dependency(%q<papertrail-cli>, ["~> 0.8.5"])
+      s.add_runtime_dependency(%q<hpricot>, ["~> 0.8.5"])
+      s.add_runtime_dependency(%q<redis>, ["~> 2.2.2"])
+      s.add_runtime_dependency(%q<hiredis>, ["~> 0.4.5"])
+      s.add_runtime_dependency(%q<em-synchrony>, [">= 0"])
+      s.add_runtime_dependency(%q<rollout>, ["~> 2.0.0"])
+      s.add_runtime_dependency(%q<rollout-zk>, ["~> 1.0.1"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
-      s.add_development_dependency(%q<rcov>, [">= 0"])
+      s.add_development_dependency(%q<pry>, ["~> 0.9.9.4"])
     else
       s.add_dependency(%q<rack>, ["= 1.3.3"])
       s.add_dependency(%q<yajl-ruby>, [">= 0"])
       s.add_dependency(%q<faraday>, ["~> 0.7.5"])
+      s.add_dependency(%q<nokogiri>, ["~> 1.5.0"])
+      s.add_dependency(%q<eventmachine>, ["~> 1.0.3"])
       s.add_dependency(%q<scamp>, [">= 0"])
       s.add_dependency(%q<can-has-lolcat>, [">= 0"])
+      s.add_dependency(%q<papertrail-cli>, ["~> 0.8.5"])
+      s.add_dependency(%q<hpricot>, ["~> 0.8.5"])
+      s.add_dependency(%q<redis>, ["~> 2.2.2"])
+      s.add_dependency(%q<hiredis>, ["~> 0.4.5"])
+      s.add_dependency(%q<em-synchrony>, [">= 0"])
+      s.add_dependency(%q<rollout>, ["~> 2.0.0"])
+      s.add_dependency(%q<rollout-zk>, ["~> 1.0.1"])
       s.add_dependency(%q<shoulda>, [">= 0"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
-      s.add_dependency(%q<rcov>, [">= 0"])
+      s.add_dependency(%q<pry>, ["~> 0.9.9.4"])
     end
   else
     s.add_dependency(%q<rack>, ["= 1.3.3"])
     s.add_dependency(%q<yajl-ruby>, [">= 0"])
     s.add_dependency(%q<faraday>, ["~> 0.7.5"])
+    s.add_dependency(%q<nokogiri>, ["~> 1.5.0"])
+    s.add_dependency(%q<eventmachine>, ["~> 1.0.3"])
     s.add_dependency(%q<scamp>, [">= 0"])
     s.add_dependency(%q<can-has-lolcat>, [">= 0"])
+    s.add_dependency(%q<papertrail-cli>, ["~> 0.8.5"])
+    s.add_dependency(%q<hpricot>, ["~> 0.8.5"])
+    s.add_dependency(%q<redis>, ["~> 2.2.2"])
+    s.add_dependency(%q<hiredis>, ["~> 0.4.5"])
+    s.add_dependency(%q<em-synchrony>, [">= 0"])
+    s.add_dependency(%q<rollout>, ["~> 2.0.0"])
+    s.add_dependency(%q<rollout-zk>, ["~> 1.0.1"])
     s.add_dependency(%q<shoulda>, [">= 0"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
-    s.add_dependency(%q<rcov>, [">= 0"])
+    s.add_dependency(%q<pry>, ["~> 0.9.9.4"])
   end
 end
 

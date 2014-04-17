@@ -23,6 +23,23 @@
 #
 #     Hash of environment variables to pass to ship command.
 #
+#   squirrel.max_age_secs = <integer>
+#
+#     How old can a branch be before it's rejected and
+#     requires a forced ship.
+#
+#   squirrel.images_baseurl
+#   squirrel.images_count
+#   squirrel.images_suffix
+#
+#     Ship and be rewarded!
+#
+#     Configure a set of rotating images that are displayed when code
+#     is successfully shipped to production. This lets everyone know
+#     it's time to party. By default you'll see some furry creatures
+#     lending a helping hand for your celebration.
+#
+#
 # Help:
 #  For a list of supported shipping commands, run `ship help`.
 ####
@@ -32,10 +49,13 @@ class Plugin::Squirrel < Plugin
 
   def initialize
     super
-    @shipping = false
   end
 
   def add_routes(rp, opts)
+    @shipping = {}
+
+    load_ship_images
+
     rp.ship do
       # 'ship help'
       #
@@ -53,6 +73,12 @@ I support the following ship commands:
 > ship <branch> to <app> [staging|production]
 
   Ships <branch> to <app> with environment staging or production.
+
+> ship <branch> to <app> (staging|production) force
+
+  Ships <branch> to <app> with environment staging or production.
+  If <branch> is determined to be too old, this will force ship
+  the branch.
 
 > ship <app> environ [staging|production]
 
@@ -92,6 +118,16 @@ EOS
         shipit(act, 'deploy', :branch => act.branch)
       end
 
+      # 'ship <branch> to <app> (staging|production) force'
+      #
+      # Ships the 'branch' for 'app' to the particular
+      # environment. This enables a "forced" ship meaning branch age
+      # will not be checked.
+      #
+      rp.route /(?<branch>[^ ]+)[ ]{1,}to[ ]{1,}(?<app>[^ ]+)(?<env>([ ]{1,}(staging|production)))[ ]{1,}force$/ do |act|
+        shipit(act, 'deploy', :branch => act.branch, :force => true)
+      end
+
       # 'ship <app> environ [staging|production]'
       rp.route /(?<app>[^ ]+)[ ]{1,}environ(ment|)(?<env>([ ]{1,}(staging|production)){0,1})$/ do |act|
         shipit(act, 'environ')
@@ -129,8 +165,20 @@ private
     Twke::Conf.get('squirrel.apps') || []
   end
 
-  def is_shipping?
-    @shipping
+  def shipping_key(app, env)
+    "%s::%s" % [app, env]
+  end
+
+  def is_shipping?(app, env)
+    @shipping[shipping_key(app, env)]
+  end
+
+  def start_shipping(app, env)
+    @shipping[shipping_key(app, env)] = true
+  end
+
+  def finish_shipping(app, env)
+    @shipping.delete(shipping_key(app, env))
   end
 
   #
@@ -145,11 +193,6 @@ private
       return
     end
 
-    if is_shipping?
-      act.say "I can only ship one thing at a time! Check `jobs list` for pending jobs."
-      return
-    end
-
     app = act.app.strip
     unless apps.include?(app)
       act.say "Sorry, I don't know the app name '%s'. I support: %s" %
@@ -160,11 +203,22 @@ private
     env = act.env.chomp.strip
     env = 'staging' unless env.length > 0
 
+    if is_shipping?(app, env)
+      act.say "I can only ship to '#{app}::#{env}' one at a time! Check `jobs list` for pending jobs."
+      return
+    end
+
     params = {
       :application => app,
       :environment => env,
       :branch => opts[:branch] || 'master'
     }
+
+    params[:force] = "" if opts[:force]
+
+    if Twke::Conf.get('squirrel.max_age_secs')
+      params[:max_age_secs] = Twke::Conf.get('squirrel.max_age_secs').to_i
+    end
 
     # Check if there is additional environment variables.
     environ = Twke::Conf.get('squirrel.environ')
@@ -178,7 +232,7 @@ private
     args = params.map{ |p| "--#{p[0]} #{p[1]}" }.join(" ")
     extra_args = "#{opts[:mode]}" if cmd == "maintenance"
 
-    @shipping = true
+    start_shipping(app, env)
     d = Twke::JobManager.spawn("#{runcmd} #{args} #{cmd} #{extra_args}",
                                :environ => environ)
     d.callback do |job|
@@ -189,8 +243,9 @@ private
         act.say "Successfully refreshed environment for %s %s (%d seconds)" %
           [app, env, secs]
       when 'migrate'
-        act.say "Successfully run migrations for %s %s (%d seconds)" %
+        act.say "Successfully ran migrations for %s %s (%d seconds)" %
           [app, env, secs]
+        act.paste job.output
       when 'maintenance'
         act.say "Successfully set maintenance mode to %s for %s %s (%d seconds)" %
           [opts[:mode].to_s, app, env, secs]
@@ -216,20 +271,21 @@ private
         act.say "Successfully shipped %s to %s %s (%d seconds)" %
           [params[:branch], app, env, secs]
 
-        act.say ShippedSquirrelPNG if params[:environment] == 'production'
+        image_url = get_ship_image
+        act.say image_url if params[:environment] == 'production'
       else
         act.say "Successfully finished the command: %s for %s %s (%d seconds)" %
           [cmd, app, env, secs]
       end
 
-      @shipping = false
+      finish_shipping(app, env)
     end
 
     d.errback do |job|
-      act.say "Failed to run deploy command:"
-      act.paste job.output_tail
+      act.say "Failed to ship %s(%s):" % [app, env]
+      act.paste job.output
       act.play 'trombone'
-      @shipping = false
+      finish_shipping(app, env)
     end
 
     jid = "[jid: #{d.jid}]"
@@ -256,4 +312,34 @@ private
     act.say 'Fire in the hole!' if params[:environment] == 'production'
 
   end
+
+  def load_ship_images
+    baseurl = Twke::Conf.get('squirrel.images_baseurl')
+    unless baseurl
+      @ship_images = {
+        :fixed => ShippedSquirrelPNG
+      }
+      return
+    end
+
+    count = Twke::Conf.get('squirrel.images_count').to_i
+    suffix = Twke::Conf.get('squirrel.images_suffix')
+
+    @ship_images = {
+      :baseurl => baseurl,
+      :count => count,
+      :suffix => suffix
+    }
+  end
+
+  def get_ship_image
+    if @ship_images[:fixed]
+      return @ship_images[:fixed]
+    end
+
+    r = rand(@ship_images[:count])
+
+    "%s%d%s" % [@ship_images[:baseurl], r, @ship_images[:suffix]]
+  end
+
 end

@@ -2,6 +2,8 @@ require 'fileutils'
 
 module Twke
   module JobManager
+    MAX_FD_CLOSE = 1024
+
     # Watch the read end of the SIGCLD notication pipe
     class ProcessPipeWatch < EM::Connection
       def initialize(procwatch)
@@ -172,6 +174,17 @@ module Twke
           trap("TTIN", "DEFAULT")
           trap("TTOU", "DEFAULT")
           trap("CHLD", "DEFAULT")
+
+          # Fix lack of close-on-exec use
+          3.upto(MAX_FD_CLOSE) do |fd|
+            next if fd == wr.fileno
+
+            begin
+              f = IO.new(fd)
+              f.close
+            rescue
+            end
+          end
 
           # Tie stdout and stderr together
           $stdout.reopen wr
