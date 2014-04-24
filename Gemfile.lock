@@ -1,11 +1,4 @@
 GIT
-  remote: https://github.com/josephruscio/can-has-lolcat.git
-  revision: bee021706cc2c854b5211e8cd295a85684638fca
-  branch: feature/add-puppeh-support
-  specs:
-    can-has-lolcat (1.1.0)
-
-GIT
   remote: https://github.com/mheffner/Scamp.git
   revision: 0792b6e7eba704318bd0b1cbd5c87e15902aee6a
   branch: feature/msg_type_condition
@@ -27,13 +20,13 @@ GEM
     addressable (2.3.5)
     atomic (1.1.14)
     coderay (1.0.9)
-    cookiejar (0.3.0)
-    em-http-request (1.1.1)
+    cookiejar (0.3.2)
+    em-http-request (1.1.2)
       addressable (>= 2.3.4)
       cookiejar
       em-socksify (>= 0.3)
       eventmachine (>= 1.0.3)
-      http_parser.rb (>= 0.6.0.beta.2)
+      http_parser.rb (>= 0.6.0)
     em-socksify (0.3.0)
       eventmachine (>= 1.0.0.beta.4)
     em-synchrony (1.0.3)
@@ -48,7 +41,7 @@ GEM
     git (1.2.6)
     hiredis (0.4.5)
     hpricot (0.8.6)
-    http_parser.rb (0.6.0.beta.2)
+    http_parser.rb (0.6.0)
     i18n (0.6.5)
     jeweler (1.6.4)
       bundler (~> 1.0)
@@ -101,7 +94,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  can-has-lolcat!
   em-synchrony
   eventmachine (~> 1.0.3)
   faraday (~> 0.7.5)

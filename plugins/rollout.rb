@@ -77,7 +77,7 @@ class Plugin::Rollout < Plugin
         end
       end
 
-      rp.route /percentage (?<feature>\w+) (?<percentage>\w.+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /percentage (?<feature>\w+) (?<percentage>\w+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
           rollout_op(act){ ro.activate_percentage(act.feature.to_sym, Integer(act.percentage)) }
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
