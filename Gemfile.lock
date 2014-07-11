@@ -96,7 +96,6 @@ PLATFORMS
 DEPENDENCIES
   em-synchrony
   eventmachine (~> 1.0.3)
-  faraday (~> 0.7.5)
   hiredis (~> 0.4.5)
   hpricot (~> 0.8.5)
   jeweler (~> 1.6.4)
