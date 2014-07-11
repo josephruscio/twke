@@ -1,4 +1,5 @@
 require 'cgi'
+require 'papertrail'
 
 class Plugin::PaperTrail < Plugin
   #
@@ -59,11 +60,12 @@ private
       raise "Papertrail token not configured!"
     end
 
-    client = Papertrail::SearchClient.new(:token => token)
-    events = client.search(search_string)
+    connection = Papertrail::Connection.new(:token => token)
+    search_query = connection.query(search_string)
+    events = search_query.search.events
 
-    Papertrail::SearchClient.format_events(events) do |e|
-      yield e
+    events.each do |event|
+      yield event.to_s
     end
   end
 end
