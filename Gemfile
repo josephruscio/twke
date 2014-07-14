@@ -4,7 +4,6 @@ gem 'rack', '1.3.3'
 
 gem 'yajl-ruby', :require => [ 'yajl', 'yajl/json_gem' ]
 
-gem 'faraday', '~> 0.7.5'
 gem "nokogiri", "~> 1.5.0"
 
 gem "eventmachine", "~> 1.0.3"
@@ -17,8 +16,7 @@ gem "scamp", :git => 'https://github.com/mheffner/Scamp.git', :branch => 'featur
 #gem "can-has-lolcat", :path => "../can-has-lolcat"
 #gem "can-has-lolcat", :git => 'https://github.com/josephruscio/can-has-lolcat.git', :branch => 'feature/add-puppeh-support'
 
-#gem "papertrail", "~> 0.9.7"
-gem "papertrail-cli", "~> 0.8.5"
+gem "papertrail", "~> 0.9.10"
 
 gem 'hpricot', "~> 0.8.5"
 
