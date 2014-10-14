@@ -92,14 +92,18 @@ I support the following ship commands:
   Runs the migration for the specified <app> using the previously
   deployed code.
 
+> ship <app> revision [staging|production] [hosts:hostA,hostB,..]
+
+  Show the deployed revision.
+
+> ship <app> setup (staging|production) [hosts:hostA,hostB,..]
+
+  Runs the initial app setup for given app/environ on a host(s).
+
 > ship <app> maintenance:(on|off) [staging|production]
 
   Put the application into maintenance mode (maintenance:on) or
   disable maintenance mode (maintenance:off) for <app>.
-
-> ship <app> revision [staging|production] [hosts:hostA,hostB,..]
-
-  Show the deployed revision.
 EOS
       end
 
@@ -162,6 +166,11 @@ EOS
       # 'ship <app> migrate [staging|production]'
       rp.route /(?<app>[^ ]+)[ ]{1,}migrate(?<env>([ ]{1,}(staging|production)){0,1})$/ do |act|
         shipit(act, 'migrate')
+      end
+
+      # 'ship <app> setup (staging|production) hosts:hostA,hostB,..'
+      rp.route /(?<app>[^ ]+)[ ]{1,}setup(?<env>([ ]{1,}(staging|production)))[ ]{1,}(?<hosts>(#{HOSTS_REGEX}))$/ do |act|
+        shipit(act, 'setup', :hosts => act.hosts)
       end
 
       # 'ship <app> maintenance:(on|off) [staging|production]'
@@ -284,6 +293,9 @@ private
       when 'environ'
         act.say "Successfully refreshed environment for %s %s (%d seconds)" %
           [app, envstr, secs]
+      when 'setup'
+        act.say "Successfully run setup for %s %s (%d seconds)" %
+          [app, envstr, secs]
       when 'migrate'
         act.say "Successfully ran migrations for %s %s (%d seconds)" %
           [app, envstr, secs]
@@ -338,6 +350,9 @@ private
         [params[:branch], params[:application], envstr, jid]
     when 'environ'
       act.say "Refreshing application environment for %s %s %s" %
+        [params[:application], envstr, jid]
+    when 'setup'
+      act.say "Setting up application environment for %s %s %s" %
         [params[:application], envstr, jid]
     when 'migrate'
       act.say "Running migrations for %s %s %s" %
