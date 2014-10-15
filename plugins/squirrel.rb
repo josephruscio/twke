@@ -47,6 +47,9 @@
 class Plugin::Squirrel < Plugin
   ShippedSquirrelPNG = 'https://img.skitch.com/20111130-j6bnpys1jgtm59ya63k33mgj1g.png'
 
+  # Host names should have at least 8 characters
+  HOSTS_REGEX = "hosts:[-._0-9A-Za-z,]{8,}"
+
   def initialize
     super
   end
@@ -70,17 +73,17 @@ I support the following ship commands:
 
   Ships 'master' to <app> with environment staging or production.
 
-> ship <branch> to <app> [staging|production]
+> ship <branch> to <app> [staging|production] [hosts:hostA,hostB,..]
 
   Ships <branch> to <app> with environment staging or production.
 
-> ship <branch> to <app> (staging|production) force
+> ship <branch> to <app> (staging|production) force [hosts:hostA,hostB,..]
 
   Ships <branch> to <app> with environment staging or production.
   If <branch> is determined to be too old, this will force ship
   the branch.
 
-> ship <app> environ [staging|production]
+> ship <app> environ [staging|production] [hosts:hostA,hostB,..]
 
   Ships the latest app environment to <app> and restarts the app.
 
@@ -89,14 +92,18 @@ I support the following ship commands:
   Runs the migration for the specified <app> using the previously
   deployed code.
 
+> ship <app> revision [staging|production] [hosts:hostA,hostB,..]
+
+  Show the deployed revision.
+
+> ship <app> setup (staging|production) [hosts:hostA,hostB,..]
+
+  Runs the initial app setup for given app/environ on a host(s).
+
 > ship <app> maintenance:(on|off) [staging|production]
 
   Put the application into maintenance mode (maintenance:on) or
   disable maintenance mode (maintenance:off) for <app>.
-
-> ship <app> revision [staging|production]
-
-  Show the deployed revision.
 EOS
       end
 
@@ -110,12 +117,30 @@ EOS
         shipit(act, 'deploy')
       end
 
+      # 'ship <branch> to <app> (staging|production) hosts:hostA,hostB,..'
+      #
+      # Ships the 'branch' for 'app' to specific hosts.
+      #
+      rp.route /(?<branch>[^ ]+)[ ]{1,}to[ ]{1,}(?<app>[^ ]+)(?<env>([ ]{1,}(staging|production)))[ ]{1,}(?<hosts>(#{HOSTS_REGEX}))$/ do |act|
+        shipit(act, 'deploy', :branch => act.branch, :hosts => act.hosts)
+      end
+
       # 'ship <branch> to <app> [staging|production]'
       #
       # Ships the 'branch' for 'app'. Environment default to staging.
       #
       rp.route /(?<branch>[^ ]+)[ ]{1,}to[ ]{1,}(?<app>[^ ]+)(?<env>([ ]{1,}(staging|production)){0,1})$/ do |act|
         shipit(act, 'deploy', :branch => act.branch)
+      end
+
+      # 'ship <branch> to <app> (staging|production) force hosts:hostA,hostB,..'
+      #
+      # Ships the 'branch' for 'app' to the particular environment on
+      # the given hosts. This enables a "forced" ship meaning branch
+      # age will not be checked.
+      #
+      rp.route /(?<branch>[^ ]+)[ ]{1,}to[ ]{1,}(?<app>[^ ]+)(?<env>([ ]{1,}(staging|production)))[ ]{1,}force[ ]{1,}(?<hosts>(#{HOSTS_REGEX}))$/ do |act|
+        shipit(act, 'deploy', :branch => act.branch, :force => true, :hosts => act.hosts)
       end
 
       # 'ship <branch> to <app> (staging|production) force'
@@ -128,6 +153,11 @@ EOS
         shipit(act, 'deploy', :branch => act.branch, :force => true)
       end
 
+      # 'ship <app> environ (staging|production) hosts:hostA,hostB,..'
+      rp.route /(?<app>[^ ]+)[ ]{1,}environ(ment|)(?<env>([ ]{1,}(staging|production)))[ ]{1,}(?<hosts>(#{HOSTS_REGEX}))$/ do |act|
+        shipit(act, 'environ', :hosts => act.hosts)
+      end
+
       # 'ship <app> environ [staging|production]'
       rp.route /(?<app>[^ ]+)[ ]{1,}environ(ment|)(?<env>([ ]{1,}(staging|production)){0,1})$/ do |act|
         shipit(act, 'environ')
@@ -138,12 +168,25 @@ EOS
         shipit(act, 'migrate')
       end
 
+      # 'ship <app> setup (staging|production) hosts:hostA,hostB,..'
+      rp.route /(?<app>[^ ]+)[ ]{1,}setup(?<env>([ ]{1,}(staging|production)))[ ]{1,}(?<hosts>(#{HOSTS_REGEX}))$/ do |act|
+        shipit(act, 'setup', :hosts => act.hosts)
+      end
+
       # 'ship <app> maintenance:(on|off) [staging|production]'
       #
       # Turns maintenance mode on or off.
       #
       rp.route /(?<app>[^ ]+)[ ]{1,}maintenance:(?<mode>(on|off))(?<env>([ ]{1,}(staging|production)){0,1})$/ do |act|
         shipit(act, 'maintenance', :mode => act.mode.to_sym)
+      end
+
+      # 'ship <app> revision (staging|production) hosts:hostA,hostB,..'
+      #
+      # Display the current revision.
+      #
+      rp.route /(?<app>[^ ]+)[ ]{1,}revision(?<env>([ ]{1,}(staging|production)))[ ]{1,}(?<hosts>(#{HOSTS_REGEX}))$/ do |act|
+        shipit(act, 'revision')
       end
 
       # 'ship <app> revision [staging|production]'
@@ -216,6 +259,10 @@ private
 
     params[:force] = "" if opts[:force]
 
+    if opts[:hosts].to_s.length > 0
+      params[:hosts] = opts[:hosts].gsub(/^hosts:/, "")
+    end
+
     if Twke::Conf.get('squirrel.max_age_secs')
       params[:max_age_secs] = Twke::Conf.get('squirrel.max_age_secs').to_i
     end
@@ -226,6 +273,10 @@ private
       act.say "ERR: Unknown type for squirrel.environ, must be a Hash"
       return
     end
+
+    envstr = "(%s%s)" %
+      [params[:environment],
+       params[:hosts] ? "{hosts: #{params[:hosts]}}" : ""]
 
     environ ||= {}
 
@@ -241,10 +292,13 @@ private
       case cmd
       when 'environ'
         act.say "Successfully refreshed environment for %s %s (%d seconds)" %
-          [app, env, secs]
+          [app, envstr, secs]
+      when 'setup'
+        act.say "Successfully run setup for %s %s (%d seconds)" %
+          [app, envstr, secs]
       when 'migrate'
         act.say "Successfully ran migrations for %s %s (%d seconds)" %
-          [app, env, secs]
+          [app, envstr, secs]
         act.paste job.output
       when 'maintenance'
         act.say "Successfully set maintenance mode to %s for %s %s (%d seconds)" %
@@ -261,21 +315,21 @@ private
         end
         # TODO: Lookup revision in project
         if rev
-          act.say "The app %s (%s) is currently at revision: %s" %
-            [app, env, rev]
+          act.say "The app %s %s is currently at revision: %s" %
+            [app, envstr, rev]
         else
-          act.say "Can't find revision for app %s (%s)" %
-            [app, env]
+          act.say "Can't find revision for app %s %s" %
+            [app, envstr]
         end
       when 'deploy'
         act.say "Successfully shipped %s to %s %s (%d seconds)" %
-          [params[:branch], app, env, secs]
+          [params[:branch], app, envstr, secs]
 
         image_url = get_ship_image
         act.say image_url if params[:environment] == 'production'
       else
         act.say "Successfully finished the command: %s for %s %s (%d seconds)" %
-          [cmd, app, env, secs]
+          [cmd, app, envstr, secs]
       end
 
       finish_shipping(app, env)
@@ -292,21 +346,24 @@ private
 
     case cmd
     when 'deploy'
-      act.say "Shipping branch/tag '%s' to %s (%s). %s" %
-        [params[:branch], params[:application], params[:environment], jid]
+      act.say "Shipping branch/tag '%s' to %s %s. %s" %
+        [params[:branch], params[:application], envstr, jid]
     when 'environ'
-      act.say "Refreshing application environment for %s (%s) %s" %
-        [params[:application], params[:environment], jid]
+      act.say "Refreshing application environment for %s %s %s" %
+        [params[:application], envstr, jid]
+    when 'setup'
+      act.say "Setting up application environment for %s %s %s" %
+        [params[:application], envstr, jid]
     when 'migrate'
-      act.say "Running migrations for %s (%s) %s" %
-        [params[:application], params[:environment], jid]
+      act.say "Running migrations for %s %s %s" %
+        [params[:application], envstr, jid]
     when 'revision'
-      act.say "Checking revision for %s (%s) %s" %
-        [params[:application], params[:environment], jid]
+      act.say "Checking revision for %s %s %s" %
+        [params[:application], envstr, jid]
     when 'maintenance'
-      act.say "%s maintenance mode for %s (%s) %s" %
+      act.say "%s maintenance mode for %s %s %s" %
         [opts[:mode] == :on ? "Enabling" : "Disabling",
-         params[:application], params[:environment], jid]
+         params[:application], envstr, jid]
     end
 
     act.say 'Fire in the hole!' if params[:environment] == 'production'
