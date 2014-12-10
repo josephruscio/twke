@@ -82,7 +82,7 @@ class Plugin::Rollout < Plugin
           pct = Integer(act.percentage)
           if pct < 0 or pct > 100
             act.say "#{pct} is an invalid percentage"
-            return
+            break
           end
           rollout_op(act){ ro.activate_percentage(act.feature.to_sym, pct) }
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
