@@ -63,23 +63,28 @@ class Plugin::Rollout < Plugin
       end
 
       # Activate/Deactivate users
-      rp.route /activate_user (?<feature>\w+) (?<user_id>\w+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /activate_user (?<feature>\w+) (?<user_id>\d+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
           rollout_op(act){ro.activate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
 
-      rp.route /deactivate_user (?<feature>\w+) (?<user_id>\w+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /deactivate_user (?<feature>\w+) (?<user_id>\d+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
           rollout_op(act){ro.deactivate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
 
-      rp.route /percentage (?<feature>\w+) (?<percentage>\w+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /percentage (?<feature>\w+) (?<percentage>\d+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
-          rollout_op(act){ ro.activate_percentage(act.feature.to_sym, Integer(act.percentage)) }
+          pct = Integer(act.percentage)
+          if pct < 0 or pct > 100
+            act.say "#{pct} is an invalid percentage"
+            return
+          end
+          rollout_op(act){ ro.activate_percentage(act.feature.to_sym, pct) }
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
