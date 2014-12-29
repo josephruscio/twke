@@ -41,21 +41,21 @@ class Plugin::Rollout < Plugin
       rollouts = {:production => @rollout, :staging => @rollout_staging}
 
       # Query the current status of a feature
-      rp.route /info (?<feature>[\w-]+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /info (?<feature>[.\w-]+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
 
       # Activate/Deactivate groups
-      rp.route /activate_group (?<feature>[\w-]+) (?<group>[\w\.@]+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /activate_group (?<feature>[.\w-]+) (?<group>[\w\.@]+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
           rollout_op(act){ro.activate_group(act.feature.to_sym, act.group.to_sym)}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
 
-      rp.route /deactivate_group (?<feature>[\w-]+) (?<group>[\w\.@]+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /deactivate_group (?<feature>[.\w-]+) (?<group>[\w\.@]+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
           rollout_op(act){ro.deactivate_group(act.feature.to_sym, act.group.to_sym)}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
@@ -63,21 +63,21 @@ class Plugin::Rollout < Plugin
       end
 
       # Activate/Deactivate users
-      rp.route /activate_user (?<feature>[\w-]+) (?<user_id>\d+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /activate_user (?<feature>[.\w-]+) (?<user_id>\d+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
           rollout_op(act){ro.activate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
 
-      rp.route /deactivate_user (?<feature>[\w-]+) (?<user_id>\d+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /deactivate_user (?<feature>[.\w-]+) (?<user_id>\d+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
           rollout_op(act){ro.deactivate_user(act.feature.to_sym, FakeUser.new(act.user_id))}
           act.paste ro.get(act.feature.to_sym).to_hash.to_s
         end
       end
 
-      rp.route /percentage (?<feature>[\w-]+) (?<percentage>\d+)\s*(?<env>\w+)?$/ do |act|
+      rp.route /percentage (?<feature>[.\w-]+) (?<percentage>\d+)\s*(?<env>\w+)?$/ do |act|
         with_rollout(act) do |ro|
           pct = Integer(act.percentage)
           if pct < 0 or pct > 100
